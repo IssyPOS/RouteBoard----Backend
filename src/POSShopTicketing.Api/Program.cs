@@ -180,11 +180,11 @@ try
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSerilogRequestLogging();
 
-    if (app.Environment.IsDevelopment())
-    {
+    //if (app.Environment.IsDevelopment())
+    //{
         app.UseSwagger();
         app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "POSShopTicketing API v1"));
-    }
+   // }
 
     app.UseHttpsRedirection();
     app.UseCors("Default");
