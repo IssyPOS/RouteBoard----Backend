@@ -1,0 +1,141 @@
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using POSShopTicketing.Application.Common.Exceptions;
+using POSShopTicketing.Application.Common.Interfaces;
+using POSShopTicketing.Application.Tickets.Events;
+using POSShopTicketing.Domain.Entities;
+using POSShopTicketing.Domain.Enums;
+
+namespace POSShopTicketing.Application.Tickets.Commands.CreateTicket;
+
+/// <summary>
+/// POST /tickets - manual creation, usable end to end (thread, status,
+/// assignment) before email is ever wired up, per the spec's phased
+/// roadmap (Phase 2 doesn't depend on Phase 3).
+/// </summary>
+public record CreateTicketCommand : IRequest<Guid>
+{
+    public string Subject { get; init; } = string.Empty;
+    public string InitialMessageBody { get; init; } = string.Empty;
+    public Guid? OrganizationId { get; init; }
+    public Guid? OrganizationTeamId { get; init; }
+    public Guid? OrganizationMemberId { get; init; }
+    public TicketPriority? Priority { get; init; }
+}
+
+public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, Guid>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly ICurrentTenantService _currentTenantService;
+    private readonly ICurrentUserService _currentUserService;
+    private readonly ITicketNumberGenerator _ticketNumberGenerator;
+    private readonly ITicketPriorityClassifier _priorityClassifier;
+    private readonly ITicketAssignmentService _assignmentService;
+    private readonly ISlaCalculator _slaCalculator;
+    private readonly IHtmlSanitizerService _htmlSanitizer;
+    private readonly IDateTime _dateTime;
+    private readonly IPublisher _publisher;
+
+    public CreateTicketCommandHandler(
+        IApplicationDbContext context,
+        ICurrentTenantService currentTenantService,
+        ICurrentUserService currentUserService,
+        ITicketNumberGenerator ticketNumberGenerator,
+        ITicketPriorityClassifier priorityClassifier,
+        ITicketAssignmentService assignmentService,
+        ISlaCalculator slaCalculator,
+        IHtmlSanitizerService htmlSanitizer,
+        IDateTime dateTime,
+        IPublisher publisher)
+    {
+        _context = context;
+        _currentTenantService = currentTenantService;
+        _currentUserService = currentUserService;
+        _ticketNumberGenerator = ticketNumberGenerator;
+        _priorityClassifier = priorityClassifier;
+        _assignmentService = assignmentService;
+        _slaCalculator = slaCalculator;
+        _htmlSanitizer = htmlSanitizer;
+        _dateTime = dateTime;
+        _publisher = publisher;
+    }
+
+    public async Task<Guid> Handle(CreateTicketCommand request, CancellationToken cancellationToken)
+    {
+        var tenantId = _currentTenantService.TenantId
+            ?? throw new ForbiddenException("Tickets must be created from within a tenant.");
+
+        var tenant = await _context.Tenants.FindAsync(new object[] { tenantId }, cancellationToken)
+            ?? throw new NotFoundException(nameof(Tenant), tenantId);
+
+        OrganizationMember? member = null;
+        if (request.OrganizationMemberId.HasValue)
+        {
+            member = await _context.OrganizationMembers.FindAsync(new object[] { request.OrganizationMemberId.Value }, cancellationToken)
+                ?? throw new NotFoundException(nameof(OrganizationMember), request.OrganizationMemberId.Value);
+        }
+
+        var now = _dateTime.Now;
+        var priority = request.Priority ?? _priorityClassifier.Classify(request.Subject, request.InitialMessageBody);
+        var dueAt = await _slaCalculator.CalculateDueDateAsync(tenantId, priority, now, cancellationToken);
+
+        var assignedToTeamMemberId = await _assignmentService.ResolveAssigneeAsync(
+            tenantId, request.OrganizationId, request.OrganizationTeamId, request.OrganizationMemberId, cancellationToken);
+
+        var ticket = new Ticket
+        {
+            TenantId = tenantId,
+            TicketNumber = await _ticketNumberGenerator.NextAsync(tenant.TicketPrefix, cancellationToken),
+            OrganizationId = request.OrganizationId,
+            OrganizationTeamId = request.OrganizationTeamId,
+            OrganizationMemberId = request.OrganizationMemberId,
+            RawSenderEmail = member?.Email ?? string.Empty,
+            MailboxId = null,
+            Subject = request.Subject.Trim(),
+            Status = TicketStatus.New,
+            Priority = priority,
+            Source = TicketSource.Manual,
+            AssignedToTeamMemberId = assignedToTeamMemberId,
+            DueAt = dueAt
+        };
+
+        ticket.StatusHistory.Add(new TicketStatusHistory
+        {
+            TenantId = tenantId,
+            TicketId = ticket.Id,
+            FromStatus = TicketStatus.Unverified,
+            ToStatus = TicketStatus.New,
+            ChangedByTeamMemberId = _currentUserService.TeamMemberId,
+            ChangedAt = now,
+            Note = "Created manually"
+        });
+
+        ticket.Messages.Add(new TicketMessage
+        {
+            TenantId = tenantId,
+            TicketId = ticket.Id,
+            Direction = MessageDirection.Inbound,
+            AuthorType = member is not null ? MessageAuthorType.OrganizationMember : MessageAuthorType.TeamMember,
+            AuthorTeamMemberId = member is null ? _currentUserService.TeamMemberId : null,
+            AuthorEmail = member?.Email,
+            AuthorName = member?.FullName,
+            Body = _htmlSanitizer.Sanitize(request.InitialMessageBody)
+        });
+
+        _context.Tickets.Add(ticket);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        await _publisher.Publish(
+            new TicketCreatedEvent(tenantId, ticket.Id, ticket.TicketNumber, ticket.Subject, IsUnverified: false),
+            cancellationToken);
+
+        if (assignedToTeamMemberId.HasValue)
+        {
+            await _publisher.Publish(
+                new TicketAssignedEvent(tenantId, ticket.Id, ticket.TicketNumber, assignedToTeamMemberId.Value),
+                cancellationToken);
+        }
+
+        return ticket.Id;
+    }
+}

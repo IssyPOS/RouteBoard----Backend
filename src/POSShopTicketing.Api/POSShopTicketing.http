@@ -1,0 +1,344 @@
+@baseUrl = https://localhost:7163/api
+@token = PASTE_ACCESS_TOKEN_HERE
+@platformToken = PASTE_PLATFORM_SUPERADMIN_TOKEN_HERE
+
+### Auth ------------------------------------------------------------
+
+### Self-serve: register a brand-new tenant + its first Owner
+POST {{baseUrl}}/auth/register-tenant
+Content-Type: application/json
+
+{
+  "tenantName": "Globex Support",
+  "ownerEmail": "owner@globex-support.test",
+  "ownerPassword": "Passw0rd!123",
+  "ownerFirstName": "Gina",
+  "ownerLastName": "Owner"
+}
+
+### Log in with a seeded demo user (see README for the full list)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "owner@acme-support.test",
+  "password": "Passw0rd!123"
+}
+
+### Refresh an access token
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "PASTE_REFRESH_TOKEN_FROM_LOGIN_RESPONSE"
+}
+
+### Log out (revokes the refresh token, records a TeamMember.LoggedOut audit entry)
+POST {{baseUrl}}/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "PASTE_REFRESH_TOKEN_FROM_LOGIN_RESPONSE"
+}
+
+### Owner/Admin: invite a new team member
+### The invite token is emailed directly to "email" below - it is NOT
+### returned in this response (see README "Activity audit trail" /
+### the invite-token security note). Use a REAL address you can check if
+### you've configured Smtp (see README "Outbound email"); otherwise,
+### find the token in the console/log file - look for a line starting
+### "OUTBOUND EMAIL to ..." right after this call.
+POST {{baseUrl}}/auth/invite
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "email": "new.agent@acme-support.test",
+  "firstName": "New",
+  "lastName": "Agent",
+  "role": "Agent"
+}
+
+### Accept an invite (token from the email/log above, NOT from the invite response)
+POST {{baseUrl}}/auth/invite/accept
+Content-Type: application/json
+
+{
+  "inviteToken": "PASTE_INVITE_TOKEN_HERE",
+  "password": "Passw0rd!123"
+}
+
+### Team members ------------------------------------------------------
+
+GET {{baseUrl}}/teammembers
+Authorization: Bearer {{token}}
+
+### Organizations, teams, members --------------------------------------
+
+GET {{baseUrl}}/organizations
+Authorization: Bearer {{token}}
+
+### Create an organization (Owner/Admin)
+POST {{baseUrl}}/organizations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Initech LLC"
+}
+
+### Create a team on an organization
+POST {{baseUrl}}/organizations/00000000-0000-0000-0000-000000000000/teams
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Operations"
+}
+
+### Create a member on an organization
+POST {{baseUrl}}/organizations/00000000-0000-0000-0000-000000000000/members
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "organizationTeamId": null,
+  "fullName": "Peter Gibbons",
+  "email": "peter.gibbons@initech.example",
+  "phone": "+1-555-0110"
+}
+
+### Merge a duplicate/typo'd member into the real one
+POST {{baseUrl}}/organizations/00000000-0000-0000-0000-000000000000/members/00000000-0000-0000-0000-000000000001/merge
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+"00000000-0000-0000-0000-000000000002"
+
+### Assignment rules & mailboxes -----------------------------------------
+
+GET {{baseUrl}}/assignmentrules
+Authorization: Bearer {{token}}
+
+### Route a whole organization to a specific agent
+POST {{baseUrl}}/assignmentrules
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "scopeType": "Organization",
+  "scopeId": "00000000-0000-0000-0000-000000000000",
+  "assignedToTeamMemberId": "00000000-0000-0000-0000-000000000000",
+  "priorityOrder": 0
+}
+
+GET {{baseUrl}}/mailboxes
+Authorization: Bearer {{token}}
+
+### Zero-setup mailbox: omit emailAddress entirely - verified immediately,
+### no DNS work needed (see README "Two ways to get a Mailbox")
+POST {{baseUrl}}/mailboxes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "provider": "SendGridInboundParse",
+  "isDefault": true
+}
+
+### Bring-your-own-domain mailbox: supply emailAddress - requires a real
+### DNS/forwarding change on your end, then POST .../verify once it's live
+POST {{baseUrl}}/mailboxes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "emailAddress": "support@your-own-domain.example",
+  "provider": "SendGridInboundParse",
+  "isDefault": false
+}
+
+### Verify a bring-your-own-domain mailbox (not needed for zero-setup ones)
+POST {{baseUrl}}/mailboxes/00000000-0000-0000-0000-000000000000/verify
+Authorization: Bearer {{token}}
+
+### Tickets ------------------------------------------------------------
+
+### Working queue (Unverified excluded by default)
+GET {{baseUrl}}/tickets?status=New&pageNumber=1&pageSize=20
+Authorization: Bearer {{token}}
+
+### See tickets stuck in Unverified specifically (see README "Troubleshooting"
+### if a webhook-created ticket seems to be "missing" from the queue above)
+GET {{baseUrl}}/tickets?status=Unverified
+Authorization: Bearer {{token}}
+
+### Manual ticket creation
+POST {{baseUrl}}/tickets
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "subject": "Printer jammed again",
+  "initialMessageBody": "The receipt printer at till 1 keeps jamming after every third sale.",
+  "organizationMemberId": "00000000-0000-0000-0000-000000000000"
+}
+
+### Move status (Unverified -> New -> Open -> Pending <-> Open -> Resolved -> Closed)
+PATCH {{baseUrl}}/tickets/00000000-0000-0000-0000-000000000000/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "Open",
+  "note": "Started working on it"
+}
+
+### Change priority (recomputes DueAt)
+PATCH {{baseUrl}}/tickets/00000000-0000-0000-0000-000000000000/priority
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+"High"
+
+### Reassign (Manager+)
+PATCH {{baseUrl}}/tickets/00000000-0000-0000-0000-000000000000/assignee
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+"00000000-0000-0000-0000-000000000000"
+
+### Escalate (Manager+)
+PATCH {{baseUrl}}/tickets/00000000-0000-0000-0000-000000000000/escalate
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+true
+
+### Reply (threads to the customer via email if org member is on file)
+POST {{baseUrl}}/tickets/00000000-0000-0000-0000-000000000000/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "direction": "Outbound",
+  "body": "Thanks for the report - we're sending a technician today."
+}
+
+### Internal note (never leaves the app)
+POST {{baseUrl}}/tickets/00000000-0000-0000-0000-000000000000/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "direction": "InternalNote",
+  "body": "Customer mentioned this happened twice last week too."
+}
+
+GET {{baseUrl}}/tickets/00000000-0000-0000-0000-000000000000/messages
+Authorization: Bearer {{token}}
+
+GET {{baseUrl}}/tickets/00000000-0000-0000-0000-000000000000/status-history
+Authorization: Bearer {{token}}
+
+### SLA management: currently breached tickets
+GET {{baseUrl}}/tickets/sla-breaches
+Authorization: Bearer {{token}}
+
+### Triage: Unverified queue, Manager+ only -----------------------------
+
+GET {{baseUrl}}/tickets/triage
+Authorization: Bearer {{token}}
+
+### Register a brand-new sender against a brand-new organization
+POST {{baseUrl}}/tickets/00000000-0000-0000-0000-000000000000/triage/register
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "newOrganizationName": "Hooli Inc",
+  "newOrganizationTeamName": "Support",
+  "memberFullName": "Richard Hendricks"
+}
+
+### Link to an existing member (typo'd/alternate address)
+POST {{baseUrl}}/tickets/00000000-0000-0000-0000-000000000000/triage/link
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+"00000000-0000-0000-0000-000000000000"
+
+### Assign as an anonymous one-off
+POST {{baseUrl}}/tickets/00000000-0000-0000-0000-000000000000/triage/anonymize
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+"00000000-0000-0000-0000-000000000000"
+
+### Reject (spam / out of scope)
+POST {{baseUrl}}/tickets/00000000-0000-0000-0000-000000000000/triage/reject
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+"Spam - unrelated marketing email"
+
+### Reports (Manager+) --------------------------------------------------
+
+GET {{baseUrl}}/reports/volume
+Authorization: Bearer {{token}}
+
+GET {{baseUrl}}/reports/response-times
+Authorization: Bearer {{token}}
+
+### Inbound email webhook (public - no bearer token, secret header instead) --
+
+### First message on a new thread -> creates a new ticket
+POST {{baseUrl}}/webhooks/inbound-email/00000000-0000-0000-0000-000000000000
+X-Webhook-Secret: dev-webhook-secret-do-not-use-in-production
+Content-Type: application/json
+
+{
+  "senderEmail": "priya.kapoor@contoso.example",
+  "senderName": "Priya Kapoor",
+  "subject": "Checkout terminal frozen",
+  "bodyHtml": "<p>Terminal 4 froze mid-transaction and won't respond.</p>",
+  "messageId": "<msg-001@contoso.example>"
+}
+
+### A reply with In-Reply-To set -> appends to the same ticket
+POST {{baseUrl}}/webhooks/inbound-email/00000000-0000-0000-0000-000000000000
+X-Webhook-Secret: dev-webhook-secret-do-not-use-in-production
+Content-Type: application/json
+
+{
+  "senderEmail": "priya.kapoor@contoso.example",
+  "senderName": "Priya Kapoor",
+  "subject": "Re: Checkout terminal frozen",
+  "bodyHtml": "<p>Still frozen even after a restart.</p>",
+  "messageId": "<msg-002@contoso.example>",
+  "inReplyTo": "<msg-001@contoso.example>"
+}
+
+### An unrecognized sender -> Unverified ticket in the triage queue
+POST {{baseUrl}}/webhooks/inbound-email/00000000-0000-0000-0000-000000000000
+X-Webhook-Secret: dev-webhook-secret-do-not-use-in-production
+Content-Type: application/json
+
+{
+  "senderEmail": "stranger@example.com",
+  "senderName": "A Stranger",
+  "subject": "Do you sell parts?",
+  "bodyHtml": "<p>Do you sell replacement receipt paper rolls?</p>",
+  "messageId": "<msg-003@example.com>"
+}
+
+### Platform (PlatformSuperAdmin only) -----------------------------------
+
+GET {{baseUrl}}/platform/tenants
+Authorization: Bearer {{platformToken}}
+
+PATCH {{baseUrl}}/platform/tenants/00000000-0000-0000-0000-000000000000/suspend
+Authorization: Bearer {{platformToken}}
+
+PATCH {{baseUrl}}/platform/tenants/00000000-0000-0000-0000-000000000000/reactivate
+Authorization: Bearer {{platformToken}}

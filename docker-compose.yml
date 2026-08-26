@@ -1,0 +1,65 @@
+# Local dev / Hostinger Docker VPS deployment.
+#   docker compose up -d --build
+# Then, once, apply migrations (see README "Running it"):
+#   docker compose exec api dotnet ef database update ...
+# or bake migrations into the image and run them automatically - see
+# the "Deploying" section of the README for the production approach.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: posshopticketing
+      POSTGRES_USER: posshopticketing
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-in-production}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U posshopticketing"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: >-
+        Host=postgres;Port=5432;Database=posshopticketing;
+        Username=posshopticketing;Password=${POSTGRES_PASSWORD:-change-me-in-production}
+      Jwt__Secret: ${JWT_SECRET:?Set JWT_SECRET to a random 32+ character string in your .env file}
+      Jwt__Issuer: POSShopTicketing
+      Jwt__Audience: POSShopTicketingClients
+      Jwt__AccessTokenExpiryMinutes: "30"
+      Jwt__RefreshTokenExpiryDays: "30"
+      # Optional - leave the .env values blank and the app falls back to
+      # logging outbound email instead of sending it (see README
+      # "Outbound email"). Fill them in once you have real SMTP
+      # credentials from whichever provider you're using.
+      Smtp__Host: ${SMTP_HOST:-}
+      Smtp__Port: ${SMTP_PORT:-587}
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__Password: ${SMTP_PASSWORD:-}
+      Smtp__UseStartTls: ${SMTP_USE_START_TLS:-true}
+      Smtp__FromAddress: ${SMTP_FROM_ADDRESS:-}
+      Smtp__FromName: ${SMTP_FROM_NAME:-POSShopTicketing}
+      AuditEmail__Enabled: ${AUDIT_EMAIL_ENABLED:-true}
+    volumes:
+      # One log file per run (see Program.cs) lands here, readable from
+      # the host without needing `docker compose exec`/`docker logs`.
+      - ./logs:/app/logs
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres-data:
