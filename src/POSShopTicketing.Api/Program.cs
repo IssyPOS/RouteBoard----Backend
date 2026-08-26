@@ -200,18 +200,32 @@ try
         Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
     });
 
+    // Apply migrations and seed fixture data on startup in Development only.
+    // In other environments, run migrations explicitly as a deployment step.
+    //if (app.Environment.IsDevelopment())
+    //{
+    //    using var scope = app.Services.CreateScope();
+    //    var initializer = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitializer>();
+    //    await initializer.InitialiseAsync();
+    //    await initializer.SeedAsync();
+    //}
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var initializer = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitializer>();
+
+        await initializer.InitialiseAsync();
+
+        if (app.Environment.IsDevelopment())
+        {
+            await initializer.SeedAsync();
+        }
+    }
+
     RecurringJob.AddOrUpdate<SlaBreachRecurringJob>(
         "sla-breach-sweep", job => job.RunAsync(CancellationToken.None), "*/5 * * * *");
 
-    // Apply migrations and seed fixture data on startup in Development only.
-    // In other environments, run migrations explicitly as a deployment step.
-    if (app.Environment.IsDevelopment())
-    {
-        using var scope = app.Services.CreateScope();
-        var initializer = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitializer>();
-        await initializer.InitialiseAsync();
-        await initializer.SeedAsync();
-    }
+    
 
     Log.Information("POSShopTicketing API host built - logging this run to {LogFilePath}", logFilePath);
 
