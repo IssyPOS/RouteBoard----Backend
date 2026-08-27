@@ -14,9 +14,11 @@ public class Organization : BaseAuditableEntity, ITenantScoped
 
     public string Name { get; set; } = string.Empty;
 
+    public string Domain { get; set; } = string.Empty;
+
     public OrganizationStatus Status { get; set; } = OrganizationStatus.Active;
 
-    public ICollection<OrganizationDepartment> Teams { get; set; } = new List<OrganizationDepartment>();
-    public ICollection<OrganizationContact> Members { get; set; } = new List<OrganizationContact>();
+    public ICollection<OrganizationDepartment> Departments { get; set; } = new List<OrganizationDepartment>();
+    public ICollection<OrganizationContact> Contacts { get; set; } = new List<OrganizationContact>();
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 }

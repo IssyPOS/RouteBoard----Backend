@@ -18,12 +18,12 @@ public class OrganizationConfiguration : IEntityTypeConfiguration<Organization>
 
         builder.HasIndex(o => o.TenantId);
 
-        builder.HasMany(o => o.Teams)
+        builder.HasMany(o => o.Departments)
             .WithOne(t => t.Organization)
             .HasForeignKey(t => t.OrganizationId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasMany(o => o.Members)
+        builder.HasMany(o => o.Contacts)
             .WithOne(m => m.Organization)
             .HasForeignKey(m => m.OrganizationId)
             .OnDelete(DeleteBehavior.Restrict);

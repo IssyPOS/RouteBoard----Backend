@@ -2,12 +2,15 @@ using MediatR;
 using POSShopTicketing.Application.Common.Exceptions;
 using POSShopTicketing.Application.Common.Interfaces;
 using POSShopTicketing.Domain.Entities;
+using POSShopTicketing.Domain.Enums;
 
 namespace POSShopTicketing.Application.Organizations.Commands.CreateOrganization;
 
 public record CreateOrganizationCommand : IRequest<Guid>
 {
     public string Name { get; init; } = string.Empty;
+    public string Domain { get; init; } = string.Empty;
+    public OrganizationStatus Status { get; init; } = OrganizationStatus.Active;
 }
 
 public class CreateOrganizationCommandHandler : IRequestHandler<CreateOrganizationCommand, Guid>
@@ -29,7 +32,9 @@ public class CreateOrganizationCommandHandler : IRequestHandler<CreateOrganizati
         var entity = new Organization
         {
             TenantId = tenantId,
-            Name = request.Name.Trim()
+            Name = request.Name.Trim(),
+            Domain = request.Domain,
+            Status = request.Status,
         };
 
         _context.Organizations.Add(entity);

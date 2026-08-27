@@ -7,6 +7,8 @@ public record OrganizationDto
 {
     public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
+
+    public string Domain { get; init; } = string.Empty;
     public OrganizationStatus Status { get; init; }
     public int TeamCount { get; init; }
     public int MemberCount { get; init; }
@@ -16,9 +18,10 @@ public record OrganizationDto
     {
         Id = entity.Id,
         Name = entity.Name,
+        Domain = entity.Domain,
         Status = entity.Status,
-        TeamCount = entity.Teams.Count,
-        MemberCount = entity.Members.Count,
+        TeamCount = entity.Departments.Count,
+        MemberCount = entity.Contacts.Count,
         CreatedAt = entity.CreatedAt
     };
 }

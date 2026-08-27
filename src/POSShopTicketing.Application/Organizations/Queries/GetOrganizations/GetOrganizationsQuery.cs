@@ -24,8 +24,8 @@ public class GetOrganizationsQueryHandler : IRequestHandler<GetOrganizationsQuer
     public async Task<PaginatedList<OrganizationDto>> Handle(GetOrganizationsQuery request, CancellationToken cancellationToken)
     {
         var query = _context.Organizations
-            .Include(o => o.Teams)
-            .Include(o => o.Members)
+            .Include(o => o.Departments)
+            .Include(o => o.Contacts)
             .AsNoTracking()
             .OrderBy(o => o.Name)
             .AsQueryable();

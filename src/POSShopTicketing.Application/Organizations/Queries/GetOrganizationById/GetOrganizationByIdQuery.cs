@@ -21,8 +21,8 @@ public class GetOrganizationByIdQueryHandler : IRequestHandler<GetOrganizationBy
     public async Task<OrganizationDto> Handle(GetOrganizationByIdQuery request, CancellationToken cancellationToken)
     {
         var entity = await _context.Organizations
-            .Include(o => o.Teams)
-            .Include(o => o.Members)
+            .Include(o => o.Departments)
+            .Include(o => o.Contacts)
             .AsNoTracking()
             .FirstOrDefaultAsync(o => o.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(Organization), request.Id);
