@@ -4,7 +4,7 @@ namespace POSShopTicketing.Domain.Entities;
 
 /// <summary>A grouping inside a Client Organization - IT, Sales,
 /// Marketing - so tickets can be attributed to a department.</summary>
-public class OrganizationTeam : BaseAuditableEntity, ITenantScoped
+public class OrganizationDepartment : BaseAuditableEntity, ITenantScoped
 {
     public Guid TenantId { get; set; }
 
@@ -13,5 +13,5 @@ public class OrganizationTeam : BaseAuditableEntity, ITenantScoped
 
     public string Name { get; set; } = string.Empty;
 
-    public ICollection<OrganizationMember> Members { get; set; } = new List<OrganizationMember>();
+    public ICollection<OrganizationContact> Members { get; set; } = new List<OrganizationContact>();
 }

@@ -164,7 +164,11 @@ try
     {
         options.AddPolicy("Default", policy =>
         {
-            policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+            policy.WithOrigins(
+                    "https://routeboars.com",
+                    "https://www.routeboars.com")
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
         });
     });
 

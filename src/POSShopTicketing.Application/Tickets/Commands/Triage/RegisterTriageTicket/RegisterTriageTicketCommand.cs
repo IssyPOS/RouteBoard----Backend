@@ -69,37 +69,37 @@ public class RegisterTriageTicketCommandHandler : IRequestHandler<RegisterTriage
             _context.Organizations.Add(organization);
         }
 
-        OrganizationTeam? team = null;
+        OrganizationDepartment? department = null;
         if (request.OrganizationTeamId.HasValue)
         {
-            team = await _context.OrganizationTeams.FindAsync(new object[] { request.OrganizationTeamId.Value }, cancellationToken)
-                ?? throw new NotFoundException(nameof(OrganizationTeam), request.OrganizationTeamId.Value);
+            department = await _context.OrganizationDepartments.FindAsync(new object[] { request.OrganizationTeamId.Value }, cancellationToken)
+                ?? throw new NotFoundException(nameof(OrganizationDepartment), request.OrganizationTeamId.Value);
         }
         else if (!string.IsNullOrWhiteSpace(request.NewOrganizationTeamName))
         {
-            team = new OrganizationTeam { TenantId = ticket.TenantId, Organization = organization, Name = request.NewOrganizationTeamName.Trim() };
-            _context.OrganizationTeams.Add(team);
+            department = new OrganizationDepartment { TenantId = ticket.TenantId, Organization = organization, Name = request.NewOrganizationTeamName.Trim() };
+            _context.OrganizationDepartments.Add(department);
         }
 
-        var member = new OrganizationMember
+        var contact = new OrganizationContact
         {
             TenantId = ticket.TenantId,
             Organization = organization,
-            OrganizationTeam = team,
+            OrganizationDepartment = department,
             FullName = request.MemberFullName.Trim(),
             Email = ticket.RawSenderEmail
         };
 
-        _context.OrganizationMembers.Add(member);
+        _context.OrganizationContacts.Add(contact);
 
         var now = _dateTime.Now;
         var assignedToTeamMemberId = await _assignmentService.ResolveAssigneeAsync(
-            ticket.TenantId, organization.Id, team?.Id, member.Id, cancellationToken);
+            ticket.TenantId, organization.Id, department?.Id, contact.Id, cancellationToken);
 
         ApplyTriageDecision(
             ticket, TicketStatus.New,
-            organization.Id, team?.Id, member.Id, assignedToTeamMemberId,
-            $"Registered as new Organization Member \"{member.FullName}\" on \"{organization.Name}\"",
+            organization.Id, department?.Id, contact.Id, assignedToTeamMemberId,
+            $"Registered as new Organization Contact \"{contact.FullName}\" on \"{organization.Name}\"",
             _currentUserService.TeamMemberId, now);
 
         await _context.SaveChangesAsync(cancellationToken);
@@ -122,8 +122,8 @@ public class RegisterTriageTicketCommandHandler : IRequestHandler<RegisterTriage
         string note, Guid? changedByTeamMemberId, DateTime now)
     {
         ticket.OrganizationId = organizationId;
-        ticket.OrganizationTeamId = organizationTeamId;
-        ticket.OrganizationMemberId = organizationMemberId;
+        ticket.OrganizationDepartmentId = organizationTeamId;
+        ticket.OrganizationContactId = organizationMemberId;
         ticket.AssignedToTeamMemberId = assignedToTeamMemberId;
         ticket.Status = newStatus;
         ticket.ClosedAt = newStatus == TicketStatus.Closed ? now : null;

@@ -37,8 +37,8 @@ public class GetTicketsQueryHandler : IRequestHandler<GetTicketsQuery, Paginated
     {
         var query = _context.Tickets
             .Include(t => t.Organization)
-            .Include(t => t.OrganizationTeam)
-            .Include(t => t.OrganizationMember)
+            .Include(t => t.OrganizationDepartment)
+            .Include(t => t.OrganizationContact)
             .Include(t => t.AssignedToTeamMember)
             .AsNoTracking()
             .OrderByDescending(t => t.CreatedAt)

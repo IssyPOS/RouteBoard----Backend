@@ -4,9 +4,9 @@ using POSShopTicketing.Application.Common.Interfaces;
 
 namespace POSShopTicketing.Application.OrganizationTeams.Queries.GetOrganizationTeams;
 
-public record GetOrganizationTeamsQuery(Guid OrganizationId) : IRequest<List<OrganizationTeamDto>>;
+public record GetOrganizationDepartmentsQuery(Guid OrganizationId) : IRequest<List<OrganizationDepartmentDto>>;
 
-public class GetOrganizationTeamsQueryHandler : IRequestHandler<GetOrganizationTeamsQuery, List<OrganizationTeamDto>>
+public class GetOrganizationTeamsQueryHandler : IRequestHandler<GetOrganizationDepartmentsQuery, List<OrganizationDepartmentDto>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -15,15 +15,15 @@ public class GetOrganizationTeamsQueryHandler : IRequestHandler<GetOrganizationT
         _context = context;
     }
 
-    public async Task<List<OrganizationTeamDto>> Handle(GetOrganizationTeamsQuery request, CancellationToken cancellationToken)
+    public async Task<List<OrganizationDepartmentDto>> Handle(GetOrganizationDepartmentsQuery request, CancellationToken cancellationToken)
     {
-        var teams = await _context.OrganizationTeams
+        var teams = await _context.OrganizationDepartments
             .Include(t => t.Members)
             .AsNoTracking()
             .Where(t => t.OrganizationId == request.OrganizationId)
             .OrderBy(t => t.Name)
             .ToListAsync(cancellationToken);
 
-        return teams.Select(OrganizationTeamDto.FromEntity).ToList();
+        return teams.Select(OrganizationDepartmentDto.FromEntity).ToList();
     }
 }

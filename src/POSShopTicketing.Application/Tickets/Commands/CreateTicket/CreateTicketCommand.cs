@@ -18,8 +18,8 @@ public record CreateTicketCommand : IRequest<Guid>
     public string Subject { get; init; } = string.Empty;
     public string InitialMessageBody { get; init; } = string.Empty;
     public Guid? OrganizationId { get; init; }
-    public Guid? OrganizationTeamId { get; init; }
-    public Guid? OrganizationMemberId { get; init; }
+    public Guid? OrganizationDepartmentId { get; init; }
+    public Guid? OrganizationContactId { get; init; }
     public TicketPriority? Priority { get; init; }
 }
 
@@ -68,11 +68,11 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, G
         var tenant = await _context.Tenants.FindAsync(new object[] { tenantId }, cancellationToken)
             ?? throw new NotFoundException(nameof(Tenant), tenantId);
 
-        OrganizationMember? member = null;
-        if (request.OrganizationMemberId.HasValue)
+        OrganizationContact? member = null;
+        if (request.OrganizationContactId.HasValue)
         {
-            member = await _context.OrganizationMembers.FindAsync(new object[] { request.OrganizationMemberId.Value }, cancellationToken)
-                ?? throw new NotFoundException(nameof(OrganizationMember), request.OrganizationMemberId.Value);
+            member = await _context.OrganizationContacts.FindAsync(new object[] { request.OrganizationContactId.Value }, cancellationToken)
+                ?? throw new NotFoundException(nameof(OrganizationContact), request.OrganizationContactId.Value);
         }
 
         var now = _dateTime.Now;
@@ -80,15 +80,15 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, G
         var dueAt = await _slaCalculator.CalculateDueDateAsync(tenantId, priority, now, cancellationToken);
 
         var assignedToTeamMemberId = await _assignmentService.ResolveAssigneeAsync(
-            tenantId, request.OrganizationId, request.OrganizationTeamId, request.OrganizationMemberId, cancellationToken);
+            tenantId, request.OrganizationId, request.OrganizationDepartmentId, request.OrganizationContactId, cancellationToken);
 
         var ticket = new Ticket
         {
             TenantId = tenantId,
             TicketNumber = await _ticketNumberGenerator.NextAsync(tenant.TicketPrefix, cancellationToken),
             OrganizationId = request.OrganizationId,
-            OrganizationTeamId = request.OrganizationTeamId,
-            OrganizationMemberId = request.OrganizationMemberId,
+            OrganizationDepartmentId = request.OrganizationDepartmentId,
+            OrganizationContactId = request.OrganizationContactId,
             RawSenderEmail = member?.Email ?? string.Empty,
             MailboxId = null,
             Subject = request.Subject.Trim(),

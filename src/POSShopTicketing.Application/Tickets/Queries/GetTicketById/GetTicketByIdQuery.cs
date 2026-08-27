@@ -24,8 +24,8 @@ public class GetTicketByIdQueryHandler : IRequestHandler<GetTicketByIdQuery, Tic
     {
         var entity = await _context.Tickets
             .Include(t => t.Organization)
-            .Include(t => t.OrganizationTeam)
-            .Include(t => t.OrganizationMember)
+            .Include(t => t.OrganizationDepartment)
+            .Include(t => t.OrganizationContact)
             .Include(t => t.AssignedToTeamMember)
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == request.Id, cancellationToken)

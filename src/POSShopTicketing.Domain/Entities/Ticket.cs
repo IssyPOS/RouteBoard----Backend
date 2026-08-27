@@ -18,11 +18,11 @@ public class Ticket : BaseAuditableEntity, ITenantScoped
     public Guid? OrganizationId { get; set; }
     public Organization? Organization { get; set; }
 
-    public Guid? OrganizationTeamId { get; set; }
-    public OrganizationTeam? OrganizationTeam { get; set; }
+    public Guid? OrganizationDepartmentId { get; set; }
+    public OrganizationDepartment? OrganizationDepartment { get; set; }
 
-    public Guid? OrganizationMemberId { get; set; }
-    public OrganizationMember? OrganizationMember { get; set; }
+    public Guid? OrganizationContactId { get; set; }
+    public OrganizationContact? OrganizationContact { get; set; }
 
     /// <summary>Captured regardless of whether the sender matched a
     /// known OrganizationMember, for triage and audit.</summary>

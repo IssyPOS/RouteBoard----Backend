@@ -5,7 +5,7 @@ namespace POSShopTicketing.Domain.Entities;
 
 /// <summary>A person at the client who emails in - identified by email
 /// address alone, never by a login.</summary>
-public class OrganizationMember : BaseAuditableEntity, ITenantScoped
+public class OrganizationContact : BaseAuditableEntity, ITenantScoped
 {
     public Guid TenantId { get; set; }
 
@@ -14,8 +14,8 @@ public class OrganizationMember : BaseAuditableEntity, ITenantScoped
 
     /// <summary>Optional - a member can exist directly under an
     /// Organization with no department grouping yet.</summary>
-    public Guid? OrganizationTeamId { get; set; }
-    public OrganizationTeam? OrganizationTeam { get; set; }
+    public Guid? OrganizationDepartmentId { get; set; }
+    public OrganizationDepartment? OrganizationDepartment { get; set; }
 
     public string FullName { get; set; } = string.Empty;
 
@@ -23,7 +23,7 @@ public class OrganizationMember : BaseAuditableEntity, ITenantScoped
 
     public string? Phone { get; set; }
 
-    public OrganizationMemberStatus Status { get; set; } = OrganizationMemberStatus.Active;
+    public OrganizationContactStatus Status { get; set; } = OrganizationContactStatus.Active;
 
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 }

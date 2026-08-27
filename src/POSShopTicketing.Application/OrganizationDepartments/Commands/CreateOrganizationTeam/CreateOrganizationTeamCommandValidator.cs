@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace POSShopTicketing.Application.OrganizationTeams.Commands.CreateOrganizationTeam;
 
-public class CreateOrganizationTeamCommandValidator : AbstractValidator<CreateOrganizationTeamCommand>
+public class CreateOrganizationTeamCommandValidator : AbstractValidator<CreateOrganizationDepartmentCommand>
 {
     public CreateOrganizationTeamCommandValidator()
     {

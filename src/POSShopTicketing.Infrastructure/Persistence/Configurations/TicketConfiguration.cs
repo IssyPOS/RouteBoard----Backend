@@ -31,14 +31,14 @@ public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
             .HasForeignKey(t => t.OrganizationId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasOne(t => t.OrganizationTeam)
+        builder.HasOne(t => t.OrganizationDepartment)
             .WithMany()
-            .HasForeignKey(t => t.OrganizationTeamId)
+            .HasForeignKey(t => t.OrganizationDepartmentId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasOne(t => t.OrganizationMember)
+        builder.HasOne(t => t.OrganizationContact)
             .WithMany(m => m.Tickets)
-            .HasForeignKey(t => t.OrganizationMemberId)
+            .HasForeignKey(t => t.OrganizationContactId)
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasOne(t => t.Mailbox)

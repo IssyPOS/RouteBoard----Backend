@@ -1,6 +1,6 @@
 namespace POSShopTicketing.Domain.Enums;
 
-public enum OrganizationMemberStatus
+public enum OrganizationContactStatus
 {
     Active = 0,
     Inactive = 1

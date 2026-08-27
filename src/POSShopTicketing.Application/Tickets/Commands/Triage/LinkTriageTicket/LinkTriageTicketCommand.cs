@@ -47,17 +47,17 @@ public class LinkTriageTicketCommandHandler : IRequestHandler<LinkTriageTicketCo
             throw new DomainException($"Ticket {ticket.TicketNumber} is not in the triage queue.");
         }
 
-        var member = await _context.OrganizationMembers.FindAsync(new object[] { request.OrganizationMemberId }, cancellationToken)
-            ?? throw new NotFoundException(nameof(OrganizationMember), request.OrganizationMemberId);
+        var contact = await _context.OrganizationContacts.FindAsync(new object[] { request.OrganizationMemberId }, cancellationToken)
+            ?? throw new NotFoundException(nameof(OrganizationContact), request.OrganizationMemberId);
 
         var now = _dateTime.Now;
         var assignedToTeamMemberId = await _assignmentService.ResolveAssigneeAsync(
-            ticket.TenantId, member.OrganizationId, member.OrganizationTeamId, member.Id, cancellationToken);
+            ticket.TenantId, contact.OrganizationId, contact.OrganizationDepartmentId, contact.Id, cancellationToken);
 
         RegisterTriageTicketCommandHandler.ApplyTriageDecision(
             ticket, TicketStatus.New,
-            member.OrganizationId, member.OrganizationTeamId, member.Id, assignedToTeamMemberId,
-            $"Linked to existing Organization Member \"{member.FullName}\"",
+            contact.OrganizationId, contact.OrganizationDepartmentId, contact.Id, assignedToTeamMemberId,
+            $"Linked to existing Organization Contact \"{contact.FullName}\"",
             _currentUserService.TeamMemberId, now);
 
         await _context.SaveChangesAsync(cancellationToken);

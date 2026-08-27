@@ -16,7 +16,7 @@ public class Organization : BaseAuditableEntity, ITenantScoped
 
     public OrganizationStatus Status { get; set; } = OrganizationStatus.Active;
 
-    public ICollection<OrganizationTeam> Teams { get; set; } = new List<OrganizationTeam>();
-    public ICollection<OrganizationMember> Members { get; set; } = new List<OrganizationMember>();
+    public ICollection<OrganizationDepartment> Teams { get; set; } = new List<OrganizationDepartment>();
+    public ICollection<OrganizationContact> Members { get; set; } = new List<OrganizationContact>();
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 }

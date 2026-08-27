@@ -111,14 +111,14 @@ public class IngestInboundEmailCommandHandler : IRequestHandler<IngestInboundEma
         var sanitizedBody = _htmlSanitizer.Sanitize(request.BodyHtml);
         var now = _dateTime.Now;
 
-        var member = await _context.OrganizationMembers
+        var contact = await _context.OrganizationContacts
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(m => m.TenantId == tenantId && m.Email == normalizedSenderEmail, cancellationToken);
 
         Ticket ticket;
         bool isNewTicket;
 
-        if (member is not null)
+        if (contact is not null)
         {
             var existingTicket = await FindThreadedTicketAsync(tenantId, request, cancellationToken);
 
@@ -150,7 +150,7 @@ public class IngestInboundEmailCommandHandler : IRequestHandler<IngestInboundEma
                     // "auto-assigned to its last owner" - only resolve a
                     // new one if it somehow has none.
                     ticket.AssignedToTeamMemberId ??= await _assignmentService.ResolveAssigneeAsync(
-                        tenantId, ticket.OrganizationId, ticket.OrganizationTeamId, ticket.OrganizationMemberId, cancellationToken);
+                        tenantId, ticket.OrganizationId, ticket.OrganizationDepartmentId, ticket.OrganizationContactId, cancellationToken);
                 }
             }
             else
@@ -158,9 +158,9 @@ public class IngestInboundEmailCommandHandler : IRequestHandler<IngestInboundEma
                 ticket = await CreateTicketAsync(
                     tenantId, mailbox, request, normalizedSenderEmail, sanitizedBody, now,
                     status: TicketStatus.New,
-                    organizationId: member.OrganizationId,
-                    organizationTeamId: member.OrganizationTeamId,
-                    organizationMemberId: member.Id,
+                    organizationId: contact.OrganizationId,
+                    organizationTeamId: contact.OrganizationDepartmentId,
+                    organizationMemberId: contact.Id,
                     runAssignment: true,
                     cancellationToken);
                 isNewTicket = true;
@@ -283,8 +283,8 @@ public class IngestInboundEmailCommandHandler : IRequestHandler<IngestInboundEma
             TenantId = tenantId,
             TicketNumber = await _ticketNumberGenerator.NextAsync(tenant.TicketPrefix, cancellationToken),
             OrganizationId = organizationId,
-            OrganizationTeamId = organizationTeamId,
-            OrganizationMemberId = organizationMemberId,
+            OrganizationDepartmentId = organizationTeamId,
+            OrganizationContactId = organizationMemberId,
             RawSenderEmail = normalizedSenderEmail,
             MailboxId = mailbox.Id,
             Subject = request.Subject.Trim(),

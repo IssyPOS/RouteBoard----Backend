@@ -5,7 +5,7 @@ using POSShopTicketing.Application.Common.Models;
 
 namespace POSShopTicketing.Application.OrganizationMembers.Queries.GetOrganizationMembers;
 
-public record GetOrganizationMembersQuery : IRequest<PaginatedList<OrganizationMemberDto>>
+public record GetOrganizationContactsQuery : IRequest<PaginatedList<OrganizationContactDto>>
 {
     public Guid? OrganizationId { get; init; }
     public string? SearchTerm { get; init; }
@@ -13,20 +13,20 @@ public record GetOrganizationMembersQuery : IRequest<PaginatedList<OrganizationM
     public int PageSize { get; init; } = 20;
 }
 
-public class GetOrganizationMembersQueryHandler : IRequestHandler<GetOrganizationMembersQuery, PaginatedList<OrganizationMemberDto>>
+public class GetOrganizationContactsQueryHandler : IRequestHandler<GetOrganizationContactsQuery, PaginatedList<OrganizationContactDto>>
 {
     private readonly IApplicationDbContext _context;
 
-    public GetOrganizationMembersQueryHandler(IApplicationDbContext context)
+    public GetOrganizationContactsQueryHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
-    public async Task<PaginatedList<OrganizationMemberDto>> Handle(GetOrganizationMembersQuery request, CancellationToken cancellationToken)
+    public async Task<PaginatedList<OrganizationContactDto>> Handle(GetOrganizationContactsQuery request, CancellationToken cancellationToken)
     {
-        var query = _context.OrganizationMembers
+        var query = _context.OrganizationContacts
             .Include(m => m.Organization)
-            .Include(m => m.OrganizationTeam)
+            .Include(m => m.OrganizationDepartment)
             .AsNoTracking()
             .OrderBy(m => m.FullName)
             .AsQueryable();
@@ -42,9 +42,9 @@ public class GetOrganizationMembersQueryHandler : IRequestHandler<GetOrganizatio
             query = query.Where(m => EF.Functions.Like(m.FullName, $"%{term}%") || EF.Functions.Like(m.Email, $"%{term}%"));
         }
 
-        var paged = await PaginatedList<Domain.Entities.OrganizationMember>.CreateAsync(query, request.PageNumber, request.PageSize);
-        var dtos = paged.Items.Select(OrganizationMemberDto.FromEntity).ToList();
+        var paged = await PaginatedList<Domain.Entities.OrganizationContact>.CreateAsync(query, request.PageNumber, request.PageSize);
+        var dtos = paged.Items.Select(OrganizationContactDto.FromEntity).ToList();
 
-        return new PaginatedList<OrganizationMemberDto>(dtos, paged.TotalCount, paged.PageNumber, request.PageSize);
+        return new PaginatedList<OrganizationContactDto>(dtos, paged.TotalCount, paged.PageNumber, request.PageSize);
     }
 }

@@ -4,11 +4,11 @@ using POSShopTicketing.Domain.Entities;
 
 namespace POSShopTicketing.Infrastructure.Persistence.Configurations;
 
-public class OrganizationTeamConfiguration : IEntityTypeConfiguration<OrganizationTeam>
+public class OrganizationDepartmentConfiguration : IEntityTypeConfiguration<OrganizationDepartment>
 {
-    public void Configure(EntityTypeBuilder<OrganizationTeam> builder)
+    public void Configure(EntityTypeBuilder<OrganizationDepartment> builder)
     {
-        builder.ToTable("OrganizationTeams");
+        builder.ToTable("OrganizationDepartments");
         builder.HasKey(t => t.Id);
 
         builder.Property(t => t.Name).IsRequired().HasMaxLength(100);
@@ -18,8 +18,8 @@ public class OrganizationTeamConfiguration : IEntityTypeConfiguration<Organizati
         builder.HasIndex(t => new { t.OrganizationId, t.Name }).IsUnique();
 
         builder.HasMany(t => t.Members)
-            .WithOne(m => m.OrganizationTeam)
-            .HasForeignKey(m => m.OrganizationTeamId)
+            .WithOne(m => m.OrganizationDepartment)
+            .HasForeignKey(m => m.OrganizationDepartmentId)
             .OnDelete(DeleteBehavior.SetNull);
     }
 }

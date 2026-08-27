@@ -22,7 +22,7 @@ public class SearchOrganizationMembersQueryHandler
 
     public async Task<List<OrganizationMemberLookupDto>> Handle(SearchOrganizationMembersQuery request, CancellationToken cancellationToken)
     {
-        var query = _context.OrganizationMembers
+        var query = _context.OrganizationContacts
             .Include(m => m.Organization)
             .AsNoTracking()
             .OrderBy(m => m.FullName)

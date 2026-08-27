@@ -49,7 +49,7 @@ public class AddTicketMessageCommandHandler : IRequestHandler<AddTicketMessageCo
     public async Task<Guid> Handle(AddTicketMessageCommand request, CancellationToken cancellationToken)
     {
         var ticket = await _context.Tickets
-            .Include(t => t.OrganizationMember)
+            .Include(t => t.OrganizationContact)
             .FirstOrDefaultAsync(t => t.Id == request.TicketId, cancellationToken)
             ?? throw new NotFoundException(nameof(Ticket), request.TicketId);
 
@@ -86,12 +86,12 @@ public class AddTicketMessageCommandHandler : IRequestHandler<AddTicketMessageCo
                 ticket.FirstResponseAt = _dateTime.Now;
             }
 
-            if (ticket.OrganizationMember is not null)
+            if (ticket.OrganizationContact is not null)
             {
                 var subjectWithToken = SubjectTokenHelper.AppendToken($"Re: {ticket.Subject}", ticket.TicketNumber);
 
                 _backgroundJobScheduler.Enqueue<ISendReplyEmailJob>(job => job.SendAsync(
-                    message.Id, ticket.OrganizationMember.Email, ticket.OrganizationMember.FullName,
+                    message.Id, ticket.OrganizationContact.Email, ticket.OrganizationContact.FullName,
                     subjectWithToken, message.Body, lastInboundMessageId, generatedMessageId!, CancellationToken.None));
             }
         }

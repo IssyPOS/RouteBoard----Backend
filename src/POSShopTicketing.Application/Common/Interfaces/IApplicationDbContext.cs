@@ -12,8 +12,8 @@ public interface IApplicationDbContext
     DbSet<TeamMember> TeamMembers { get; }
     DbSet<RefreshTokenz> RefreshTokens { get; }
     DbSet<Organization> Organizations { get; }
-    DbSet<OrganizationTeam> OrganizationTeams { get; }
-    DbSet<OrganizationMember> OrganizationMembers { get; }
+    DbSet<OrganizationDepartment> OrganizationDepartments { get; }
+    DbSet<OrganizationContact> OrganizationContacts { get; }
     DbSet<AssignmentRule> AssignmentRules { get; }
     DbSet<Mailbox> Mailboxes { get; }
     DbSet<Ticket> Tickets { get; }

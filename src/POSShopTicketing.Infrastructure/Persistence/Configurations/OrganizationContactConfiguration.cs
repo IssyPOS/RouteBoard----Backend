@@ -4,11 +4,11 @@ using POSShopTicketing.Domain.Entities;
 
 namespace POSShopTicketing.Infrastructure.Persistence.Configurations;
 
-public class OrganizationMemberConfiguration : IEntityTypeConfiguration<OrganizationMember>
+public class OrganizationContactConfiguration : IEntityTypeConfiguration<OrganizationContact>
 {
-    public void Configure(EntityTypeBuilder<OrganizationMember> builder)
+    public void Configure(EntityTypeBuilder<OrganizationContact> builder)
     {
-        builder.ToTable("OrganizationMembers");
+        builder.ToTable("OrganizationContacts");
         builder.HasKey(m => m.Id);
 
         builder.Property(m => m.FullName).IsRequired().HasMaxLength(200);

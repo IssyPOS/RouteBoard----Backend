@@ -25,7 +25,7 @@ public class GetSlaBreachedTicketsQueryHandler : IRequestHandler<GetSlaBreachedT
 
         var candidates = await _context.Tickets
             .Include(t => t.Organization)
-            .Include(t => t.OrganizationMember)
+            .Include(t => t.OrganizationContact)
             .Include(t => t.AssignedToTeamMember)
             .AsNoTracking()
             .Where(t => t.Status != TicketStatus.Resolved && t.Status != TicketStatus.Closed

@@ -28,8 +28,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<TeamMember> TeamMembers => Set<TeamMember>();
     public DbSet<RefreshTokenz> RefreshTokens => Set<RefreshTokenz>();
     public DbSet<Organization> Organizations => Set<Organization>();
-    public DbSet<OrganizationTeam> OrganizationTeams => Set<OrganizationTeam>();
-    public DbSet<OrganizationMember> OrganizationMembers => Set<OrganizationMember>();
+    public DbSet<OrganizationDepartment> OrganizationDepartments => Set<OrganizationDepartment>();
+    public DbSet<OrganizationContact> OrganizationContacts => Set<OrganizationContact>();
     public DbSet<AssignmentRule> AssignmentRules => Set<AssignmentRule>();
     public DbSet<Mailbox> Mailboxes => Set<Mailbox>();
     public DbSet<Ticket> Tickets => Set<Ticket>();

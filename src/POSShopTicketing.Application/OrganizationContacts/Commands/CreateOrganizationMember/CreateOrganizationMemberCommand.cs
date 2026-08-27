@@ -7,7 +7,7 @@ using POSShopTicketing.Domain.Exceptions;
 
 namespace POSShopTicketing.Application.OrganizationMembers.Commands.CreateOrganizationMember;
 
-public record CreateOrganizationMemberCommand : IRequest<Guid>
+public record CreateOrganizationContactCommand : IRequest<Guid>
 {
     public Guid OrganizationId { get; init; }
     public Guid? OrganizationTeamId { get; init; }
@@ -16,18 +16,18 @@ public record CreateOrganizationMemberCommand : IRequest<Guid>
     public string? Phone { get; init; }
 }
 
-public class CreateOrganizationMemberCommandHandler : IRequestHandler<CreateOrganizationMemberCommand, Guid>
+public class CreateOrganizationContactCommandHandler : IRequestHandler<CreateOrganizationContactCommand, Guid>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentTenantService _currentTenantService;
 
-    public CreateOrganizationMemberCommandHandler(IApplicationDbContext context, ICurrentTenantService currentTenantService)
+    public CreateOrganizationContactCommandHandler(IApplicationDbContext context, ICurrentTenantService currentTenantService)
     {
         _context = context;
         _currentTenantService = currentTenantService;
     }
 
-    public async Task<Guid> Handle(CreateOrganizationMemberCommand request, CancellationToken cancellationToken)
+    public async Task<Guid> Handle(CreateOrganizationContactCommand request, CancellationToken cancellationToken)
     {
         var tenantId = _currentTenantService.TenantId
             ?? throw new ForbiddenException("Organization members must be created from within a tenant.");
@@ -37,16 +37,16 @@ public class CreateOrganizationMemberCommandHandler : IRequestHandler<CreateOrga
 
         if (request.OrganizationTeamId.HasValue)
         {
-            var team = await _context.OrganizationTeams.FindAsync(new object[] { request.OrganizationTeamId.Value }, cancellationToken);
+            var team = await _context.OrganizationDepartments.FindAsync(new object[] { request.OrganizationTeamId.Value }, cancellationToken);
             if (team is null || team.OrganizationId != organization.Id)
             {
-                throw new NotFoundException(nameof(OrganizationTeam), request.OrganizationTeamId.Value);
+                throw new NotFoundException(nameof(OrganizationDepartment), request.OrganizationTeamId.Value);
             }
         }
 
         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
 
-        var duplicate = await _context.OrganizationMembers
+        var duplicate = await _context.OrganizationContacts
             .AsNoTracking()
             .AnyAsync(m => m.OrganizationId == request.OrganizationId && m.Email == normalizedEmail, cancellationToken);
 
@@ -55,17 +55,17 @@ public class CreateOrganizationMemberCommandHandler : IRequestHandler<CreateOrga
             throw new DomainException($"\"{normalizedEmail}\" is already a member of this organization.");
         }
 
-        var entity = new OrganizationMember
+        var entity = new OrganizationContact
         {
             TenantId = tenantId,
             OrganizationId = organization.Id,
-            OrganizationTeamId = request.OrganizationTeamId,
+            OrganizationDepartmentId = request.OrganizationTeamId,
             FullName = request.FullName.Trim(),
             Email = normalizedEmail,
             Phone = request.Phone
         };
 
-        _context.OrganizationMembers.Add(entity);
+        _context.OrganizationContacts.Add(entity);
         await _context.SaveChangesAsync(cancellationToken);
 
         return entity.Id;

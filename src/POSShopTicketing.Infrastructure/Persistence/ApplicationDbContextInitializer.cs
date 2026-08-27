@@ -202,27 +202,29 @@ public class ApplicationDbContextInitializer
         _context.Organizations.AddRange(contoso, fabrikam);
         await _context.SaveChangesAsync();
 
-        var contosoIt = new OrganizationTeam { TenantId = tenant.Id, OrganizationId = contoso.Id, Name = "IT" };
-        var contosoSales = new OrganizationTeam { TenantId = tenant.Id, OrganizationId = contoso.Id, Name = "Sales" };
-        _context.OrganizationTeams.AddRange(contosoIt, contosoSales);
+        var contosoIt = new OrganizationDepartment { TenantId = tenant.Id, OrganizationId = contoso.Id, Name = "IT" };
+        var contosoSales = new OrganizationDepartment { TenantId = tenant.Id, OrganizationId = contoso.Id, Name = "Sales" };
+        _context.OrganizationDepartments.AddRange(contosoIt, contosoSales);
         await _context.SaveChangesAsync();
 
-        var contosoItMember = new OrganizationMember
+        var contosoItMember = new OrganizationContact
         {
-            TenantId = tenant.Id, OrganizationId = contoso.Id, OrganizationTeamId = contosoIt.Id,
+            TenantId = tenant.Id, OrganizationId = contoso.Id,
+            OrganizationDepartmentId = contosoIt.Id,
             FullName = "Priya Kapoor", Email = "priya.kapoor@contoso.example", Phone = "+1-555-0101"
         };
-        var contosoSalesMember = new OrganizationMember
+        var contosoSalesMember = new OrganizationContact
         {
-            TenantId = tenant.Id, OrganizationId = contoso.Id, OrganizationTeamId = contosoSales.Id,
+            TenantId = tenant.Id, OrganizationId = contoso.Id,
+            OrganizationDepartmentId = contosoSales.Id,
             FullName = "Diego Alvarez", Email = "diego.alvarez@contoso.example"
         };
-        var fabrikamMember = new OrganizationMember
+        var fabrikamMember = new OrganizationContact
         {
             TenantId = tenant.Id, OrganizationId = fabrikam.Id,
             FullName = "Grace Chen", Email = "grace.chen@fabrikam.example"
         };
-        _context.OrganizationMembers.AddRange(contosoItMember, contosoSalesMember, fabrikamMember);
+        _context.OrganizationContacts.AddRange(contosoItMember, contosoSalesMember, fabrikamMember);
         await _context.SaveChangesAsync();
 
         // Assignment Preset: Contoso's IT team always routes to agent1.
@@ -276,8 +278,8 @@ public class ApplicationDbContextInitializer
             TenantId = tenant.Id,
             TicketNumber = await _ticketNumberGenerator.NextAsync(tenant.TicketPrefix, CancellationToken.None),
             OrganizationId = organizationId,
-            OrganizationTeamId = organizationTeamId,
-            OrganizationMemberId = organizationMemberId,
+            OrganizationDepartmentId = organizationTeamId,
+            OrganizationContactId = organizationMemberId,
             RawSenderEmail = senderEmail,
             MailboxId = mailboxId,
             Subject = subject,
