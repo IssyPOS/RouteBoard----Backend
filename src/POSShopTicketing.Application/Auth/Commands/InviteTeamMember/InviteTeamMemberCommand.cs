@@ -23,15 +23,15 @@ namespace POSShopTicketing.Application.Auth.Commands.InviteTeamMember;
 public record InviteTeamMemberCommand : IRequest<InviteTeamMemberResult>
 {
     public string Email { get; init; } = string.Empty;
-    public string FirstName { get; init; } = string.Empty;
-    public string LastName { get; init; } = string.Empty;
+    //public string FirstName { get; init; } = string.Empty;
+    //public string LastName { get; init; } = string.Empty;
     public TeamMemberRole Role { get; init; } = TeamMemberRole.Agent;
 }
 
 /// <summary>Deliberately does NOT include the invite token - see the
 /// handler summary above. ExpiresAt lets the caller show "invitation
 /// sent, expires on {date}" without ever holding the secret itself.</summary>
-public record InviteTeamMemberResult(Guid TeamMemberId, DateTime ExpiresAt);
+public record InviteTeamMemberResult(Guid TeamMemberId, string plainTextToken, DateTime ExpiresAt);
 
 public class InviteTeamMemberCommandHandler : IRequestHandler<InviteTeamMemberCommand, InviteTeamMemberResult>
 {
@@ -94,8 +94,8 @@ public class InviteTeamMemberCommandHandler : IRequestHandler<InviteTeamMemberCo
             TenantId = tenantId,
             Email = normalizedEmail,
             PasswordHash = string.Empty, // set on accept
-            FirstName = request.FirstName.Trim(),
-            LastName = request.LastName.Trim(),
+            //FirstName = request.FirstName.Trim(),
+            //LastName = request.LastName.Trim(),
             Role = request.Role,
             Status = TeamMemberStatus.Invited,
             InviteTokenHash = tokenHash,
@@ -107,7 +107,7 @@ public class InviteTeamMemberCommandHandler : IRequestHandler<InviteTeamMemberCo
 
         await SendInviteEmailAsync(teamMember, tenant.Name, plainTextToken, expiresAt, cancellationToken);
 
-        return new InviteTeamMemberResult(teamMember.Id, expiresAt);
+        return new InviteTeamMemberResult(teamMember.Id, plainTextToken,  expiresAt);
     }
 
     private async Task SendInviteEmailAsync(

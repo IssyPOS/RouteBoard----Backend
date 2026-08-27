@@ -12,6 +12,8 @@ namespace POSShopTicketing.Application.Auth.Commands.AcceptInvite;
 public record AcceptInviteCommand : IRequest<AuthResultDto>
 {
     public string InviteToken { get; init; } = string.Empty;
+    public string FirstName { get; init; } = string.Empty;
+    public string LastName { get; init; } = string.Empty;
     public string Password { get; init; } = string.Empty;
 }
 
@@ -68,6 +70,9 @@ public class AcceptInviteCommandHandler : IRequestHandler<AcceptInviteCommand, A
         teamMember.Status = TeamMemberStatus.Active;
         teamMember.InviteTokenHash = null;
         teamMember.InviteTokenExpiresAt = null;
+        teamMember.FirstName = request.FirstName;
+        teamMember.LastName = request.LastName;
+
 
         await _context.SaveChangesAsync(cancellationToken);
 

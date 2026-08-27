@@ -25,6 +25,8 @@ public record RegisterTenantCommand : IRequest<AuthResultDto>
     public string OwnerPassword { get; init; } = string.Empty;
     public string OwnerFirstName { get; init; } = string.Empty;
     public string OwnerLastName { get; init; } = string.Empty;
+    public string Slug { get; init; } = string.Empty;
+    public string Invites { get; init; } = string.Empty;
 }
 
 public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantCommand, AuthResultDto>
@@ -62,13 +64,13 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
             throw new DomainException($"An account with email \"{normalizedEmail}\" already exists.");
         }
 
-        var slug = await GenerateUniqueSlugAsync(request.TenantName, cancellationToken);
+        //var slug = await GenerateUniqueSlugAsync(request.TenantName, cancellationToken);
 
         var tenant = new Tenant
         {
             Name = request.TenantName.Trim(),
-            Slug = slug,
-            TicketPrefix = BuildTicketPrefix(slug),
+            Slug = request.Slug,
+            TicketPrefix = BuildTicketPrefix(request.Slug),
             Plan = TenantPlan.Trial,
             Status = TenantStatus.Active
         };
@@ -105,25 +107,25 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
         return result;
     }
 
-    private async Task<string> GenerateUniqueSlugAsync(string tenantName, CancellationToken cancellationToken)
-    {
-        var baseSlug = Regex.Replace(tenantName.Trim().ToLowerInvariant(), "[^a-z0-9]+", "-").Trim('-');
-        if (string.IsNullOrEmpty(baseSlug))
-        {
-            baseSlug = "tenant";
-        }
+    //private async Task<string> GenerateUniqueSlugAsync(string tenantName, CancellationToken cancellationToken)
+    //{
+    //    var baseSlug = Regex.Replace(tenantName.Trim().ToLowerInvariant(), "[^a-z0-9]+", "-").Trim('-');
+    //    if (string.IsNullOrEmpty(baseSlug))
+    //    {
+    //        baseSlug = "tenant";
+    //    }
 
-        var slug = baseSlug;
-        var suffix = 1;
+    //    var slug = baseSlug;
+    //    var suffix = 1;
 
-        while (await _context.Tenants.AsNoTracking().AnyAsync(t => t.Slug == slug, cancellationToken))
-        {
-            suffix++;
-            slug = $"{baseSlug}-{suffix}";
-        }
+    //    while (await _context.Tenants.AsNoTracking().AnyAsync(t => t.Slug == slug, cancellationToken))
+    //    {
+    //        suffix++;
+    //        slug = $"{baseSlug}-{suffix}";
+    //    }
 
-        return slug;
-    }
+    //    return slug;
+    //}
 
     private static string BuildTicketPrefix(string slug)
     {
