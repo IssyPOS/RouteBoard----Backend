@@ -37,19 +37,26 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
     private readonly IPasswordHasherService _passwordHasher;
     private readonly AuthResultFactory _authResultFactory;
     private readonly IPublisher _publisher;
+    private readonly IDateTime _dateTime;
+
+    private readonly IRefreshTokenService _tokenService;
 
     public RegisterTenantCommandHandler(
         IApplicationDbContext context,
         ICurrentTenantService currentTenantService,
         IPasswordHasherService passwordHasher,
         AuthResultFactory authResultFactory,
-        IPublisher publisher)
+        IPublisher publisher,
+        IRefreshTokenService tokenService,
+        IDateTime dateTime)
     {
         _context = context;
         _currentTenantService = currentTenantService;
         _passwordHasher = passwordHasher;
         _authResultFactory = authResultFactory;
         _publisher = publisher;
+        _tokenService = tokenService;
+        _dateTime = dateTime;
     }
 
     public async Task<AuthResultDto> Handle(RegisterTenantCommand request, CancellationToken cancellationToken)
@@ -85,6 +92,9 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
         // tenant we just created is the one to scope that write to.
         _currentTenantService.SetTenant(tenant.Id);
 
+        var (plainTextToken, tokenHash, _) = _tokenService.GenerateToken();
+        var expiresAt = _dateTime.Now.AddDays(7);
+
         foreach (var invite in request.Invites)
         {
             // Skip empty invite rows
@@ -98,11 +108,16 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
                 TenantId = tenant.Id,
                 Email = invite.Email.Trim().ToLowerInvariant(),
                 Role = invite.Role.Value,
-                Status = TeamMemberStatus.Invited
+                Status = TeamMemberStatus.Invited,
+                InviteTokenHash = tokenHash,
+                InviteTokenExpiresAt = expiresAt
             };
 
             _context.TeamMembers.Add(teamMemberInvites);
+
+            // Send email containing the token/link here
         }
+
 
         await _context.SaveChangesAsync(cancellationToken);
 
