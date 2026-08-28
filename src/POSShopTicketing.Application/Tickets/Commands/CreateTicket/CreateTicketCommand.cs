@@ -68,10 +68,10 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, G
         var tenant = await _context.Tenants.FindAsync(new object[] { tenantId }, cancellationToken)
             ?? throw new NotFoundException(nameof(Tenant), tenantId);
 
-        OrganizationContact? member = null;
+        OrganizationContact? contact = null;
         if (request.OrganizationContactId.HasValue)
         {
-            member = await _context.OrganizationContacts.FindAsync(new object[] { request.OrganizationContactId.Value }, cancellationToken)
+            contact = await _context.OrganizationContacts.FindAsync(new object[] { request.OrganizationContactId.Value }, cancellationToken)
                 ?? throw new NotFoundException(nameof(OrganizationContact), request.OrganizationContactId.Value);
         }
 
@@ -82,6 +82,12 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, G
         var assignedToTeamMemberId = await _assignmentService.ResolveAssigneeAsync(
             tenantId, request.OrganizationId, request.OrganizationDepartmentId, request.OrganizationContactId, cancellationToken);
 
+        var normalizedEmail = contact?.Email.Trim().ToLowerInvariant();
+
+        var teamMember = await _context.TeamMembers
+            .IgnoreQueryFilters() // login runs before a tenant is known
+            .FirstOrDefaultAsync(u => u.Email == normalizedEmail, cancellationToken);
+
         var ticket = new Ticket
         {
             TenantId = tenantId,
@@ -89,11 +95,13 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, G
             OrganizationId = request.OrganizationId,
             OrganizationDepartmentId = request.OrganizationDepartmentId,
             OrganizationContactId = request.OrganizationContactId,
-            RawSenderEmail = member?.Email ?? string.Empty,
+            RawSenderEmail = contact?.Email ?? string.Empty,
             MailboxId = null,
             Subject = request.Subject.Trim(),
             Status = TicketStatus.New,
             Priority = priority,
+            CreatorId = teamMember.Id,
+            CreatorName = teamMember.FullName,
             Source = TicketSource.Manual,
             AssignedToTeamMemberId = assignedToTeamMemberId,
             DueAt = dueAt
@@ -115,12 +123,15 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, G
             TenantId = tenantId,
             TicketId = ticket.Id,
             Direction = MessageDirection.Inbound,
-            AuthorType = member is not null ? MessageAuthorType.OrganizationMember : MessageAuthorType.TeamMember,
-            AuthorTeamMemberId = member is null ? _currentUserService.TeamMemberId : null,
-            AuthorEmail = member?.Email,
-            AuthorName = member?.FullName,
+            AuthorType = contact is not null ? MessageAuthorType.OrganizationMember : MessageAuthorType.TeamMember,
+            AuthorTeamMemberId = contact is null ? _currentUserService.TeamMemberId : null,
+            AuthorEmail = contact?.Email,
+            AuthorName = contact?.FullName,
             Body = _htmlSanitizer.Sanitize(request.InitialMessageBody)
         });
+
+        
+        
 
         _context.Tickets.Add(ticket);
         await _context.SaveChangesAsync(cancellationToken);

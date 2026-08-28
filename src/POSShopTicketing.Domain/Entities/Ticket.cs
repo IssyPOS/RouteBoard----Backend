@@ -24,6 +24,9 @@ public class Ticket : BaseAuditableEntity, ITenantScoped
     public Guid? OrganizationContactId { get; set; }
     public OrganizationContact? OrganizationContact { get; set; }
 
+    public Guid CreatorId { get; set; }
+    public string? CreatorName { get; set; }
+
     /// <summary>Captured regardless of whether the sender matched a
     /// known OrganizationMember, for triage and audit.</summary>
     public string RawSenderEmail { get; set; } = string.Empty;

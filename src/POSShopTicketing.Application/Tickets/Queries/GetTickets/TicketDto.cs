@@ -19,6 +19,8 @@ public class TicketDto
     public string? OrganizationTeamName { get; init; }
     public Guid? OrganizationMemberId { get; init; }
     public string? OrganizationMemberName { get; init; }
+    public Guid CreatorId { get; init; }
+    public string? CreatorName { get; init; }
     public string RawSenderEmail { get; init; } = string.Empty;
 
     public Guid? AssignedToTeamMemberId { get; init; }
@@ -47,6 +49,8 @@ public class TicketDto
         OrganizationTeamName = entity.OrganizationDepartment?.Name,
         OrganizationMemberId = entity.OrganizationContactId,
         OrganizationMemberName = entity.OrganizationContact?.FullName,
+        CreatorId = entity.CreatorId,
+        CreatorName = entity.CreatorName,
         RawSenderEmail = entity.RawSenderEmail,
         AssignedToTeamMemberId = entity.AssignedToTeamMemberId,
         AssignedToTeamMemberName = entity.AssignedToTeamMember?.FullName,
