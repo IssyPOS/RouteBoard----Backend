@@ -1,13 +1,14 @@
-using System.Text.RegularExpressions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using POSShopTicketing.Application.Auth.Common;
 using POSShopTicketing.Application.Auth.Events;
+using POSShopTicketing.Application.Auth.Queries.RegisterTenantDto;
 using POSShopTicketing.Application.Common.Interfaces;
 using POSShopTicketing.Application.Common.Models;
 using POSShopTicketing.Domain.Entities;
 using POSShopTicketing.Domain.Enums;
 using POSShopTicketing.Domain.Exceptions;
+using System.Text.RegularExpressions;
 
 namespace POSShopTicketing.Application.Auth.Commands.RegisterTenant;
 
@@ -26,7 +27,7 @@ public record RegisterTenantCommand : IRequest<AuthResultDto>
     public string OwnerFirstName { get; init; } = string.Empty;
     public string OwnerLastName { get; init; } = string.Empty;
     public string Slug { get; init; } = string.Empty;
-    public string Invites { get; init; } = string.Empty;
+    public List<SignupInviteDto> Invites { get; init; } = new();
 }
 
 public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantCommand, AuthResultDto>
@@ -83,6 +84,27 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
         // tenant_id claim for this public bootstrap endpoint - the
         // tenant we just created is the one to scope that write to.
         _currentTenantService.SetTenant(tenant.Id);
+
+        foreach (var invite in request.Invites)
+        {
+            // Skip empty invite rows
+            if (string.IsNullOrWhiteSpace(invite.Email) || !invite.Role.HasValue)
+            {
+                continue;
+            }
+
+            var teamMemberInvites = new TeamMember
+            {
+                TenantId = tenant.Id,
+                Email = invite.Email.Trim().ToLowerInvariant(),
+                Role = invite.Role.Value,
+                Status = TeamMemberStatus.Invited
+            };
+
+            _context.TeamMembers.Add(teamMemberInvites);
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
 
         var owner = new TeamMember
         {
