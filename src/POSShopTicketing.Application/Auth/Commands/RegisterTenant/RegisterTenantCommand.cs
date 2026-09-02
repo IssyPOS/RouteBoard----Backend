@@ -121,6 +121,20 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
                 continue;
             }
 
+            var inviteEmail = invite.Email.Trim().ToLowerInvariant();
+
+            var emailExists = await _context.TeamMembers
+            .AsNoTracking()
+            .AnyAsync(
+            x => x.Email == inviteEmail,
+            cancellationToken);
+
+            if (emailExists)
+            {
+                throw new DomainException(
+                $"An account with invite email '{inviteEmail}' already exists.");
+            }
+
             var (plainTextToken, tokenHash, _) = _tokenService.GenerateToken();
 
            
