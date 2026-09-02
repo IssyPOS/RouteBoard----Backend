@@ -8,6 +8,7 @@ using POSShopTicketing.Application.Common.Models;
 using POSShopTicketing.Domain.Entities;
 using POSShopTicketing.Domain.Enums;
 using POSShopTicketing.Domain.Exceptions;
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace POSShopTicketing.Application.Auth.Commands.RegisterTenant;
@@ -33,29 +34,38 @@ public record RegisterTenantCommand : IRequest<AuthResultDto>
 public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantCommand, AuthResultDto>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
     private readonly ICurrentTenantService _currentTenantService;
+    private readonly IEmailSender _emailSender;
     private readonly IPasswordHasherService _passwordHasher;
     private readonly AuthResultFactory _authResultFactory;
     private readonly IPublisher _publisher;
     private readonly IDateTime _dateTime;
+    private readonly IAppUrlProvider _appUrlProvider;
 
     private readonly IRefreshTokenService _tokenService;
 
     public RegisterTenantCommandHandler(
         IApplicationDbContext context,
         ICurrentTenantService currentTenantService,
+        ICurrentUserService currentUserService,
         IPasswordHasherService passwordHasher,
         AuthResultFactory authResultFactory,
         IPublisher publisher,
         IRefreshTokenService tokenService,
+        IEmailSender emailSender,
+        IAppUrlProvider appUrlProvider,
         IDateTime dateTime)
     {
         _context = context;
         _currentTenantService = currentTenantService;
+        _currentUserService = currentUserService;
         _passwordHasher = passwordHasher;
         _authResultFactory = authResultFactory;
         _publisher = publisher;
         _tokenService = tokenService;
+        _appUrlProvider = appUrlProvider;
+        _emailSender = emailSender;
         _dateTime = dateTime;
     }
 
@@ -92,18 +102,19 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
         // tenant we just created is the one to scope that write to.
         _currentTenantService.SetTenant(tenant.Id);
 
-        var (plainTextToken, tokenHash, _) = _tokenService.GenerateToken();
+      
         var expiresAt = _dateTime.Now.AddDays(7);
 
         foreach (var invite in request.Invites)
         {
-            // Skip empty invite rows
             if (string.IsNullOrWhiteSpace(invite.Email) || !invite.Role.HasValue)
             {
                 continue;
             }
 
-            var teamMemberInvites = new TeamMember
+            var (plainTextToken, tokenHash, _) = _tokenService.GenerateToken();
+
+            var teamMemberInvite = new TeamMember
             {
                 TenantId = tenant.Id,
                 Email = invite.Email.Trim().ToLowerInvariant(),
@@ -113,9 +124,14 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
                 InviteTokenExpiresAt = expiresAt
             };
 
-            _context.TeamMembers.Add(teamMemberInvites);
+            _context.TeamMembers.Add(teamMemberInvite);
 
-            // Send email containing the token/link here
+            await SendInviteEmailAsync(
+                teamMemberInvite,
+                tenant.Name,
+                plainTextToken,
+                expiresAt,
+                cancellationToken);
         }
 
 
@@ -132,6 +148,8 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
             Status = TeamMemberStatus.Active
         };
 
+        
+
         _context.TeamMembers.Add(owner);
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -141,7 +159,35 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
             new TeamMemberLoggedInEvent(tenant.Id, owner.Id, owner.Email, owner.FullName, owner.Role.ToString()),
             cancellationToken);
 
+       // await SendInviteEmailAsync(owner, tenant.Name, plainTextToken, expiresAt, cancellationToken);
+
         return result;
+    }
+
+    private async Task SendInviteEmailAsync(
+        TeamMember teamMember, string tenantName, string plainTextToken, DateTime expiresAt, CancellationToken cancellationToken)
+    {
+        var acceptUrl = _appUrlProvider.BuildInviteAcceptUrl(plainTextToken);
+        var inviterLabel = _currentUserService.Email ?? "a team admin";
+        var encodedTenantName = WebUtility.HtmlEncode(tenantName);
+        var encodedToken = WebUtility.HtmlEncode(plainTextToken);
+
+        var bodyHtml = string.IsNullOrEmpty(acceptUrl)
+            ? $"<p>{WebUtility.HtmlEncode(inviterLabel)} invited you to join <strong>{encodedTenantName}</strong> " +
+              $"on POSShopTicketing as {teamMember.Role}.</p>" +
+              $"<p>To accept, call <code>POST /api/auth/invite/accept</code> with this token:</p>" +
+              $"<p style=\"font-family:monospace;background:#f4f4f4;padding:8px;word-break:break-all\">{encodedToken}</p>" +
+              $"<p>This invite expires {expiresAt:yyyy-MM-dd HH:mm} UTC.</p>"
+            : $"<p>{WebUtility.HtmlEncode(inviterLabel)} invited you to join <strong>{encodedTenantName}</strong> " +
+              $"on POSShopTicketing as {teamMember.Role}.</p>" +
+              $"<p><a href=\"{acceptUrl}\">Click here to accept your invitation</a></p>" +
+              $"<p>Or use this token directly with <code>POST /api/auth/invite/accept</code>: " +
+              $"<span style=\"font-family:monospace\">{encodedToken}</span></p>" +
+              $"<p>This invite expires {expiresAt:yyyy-MM-dd HH:mm} UTC.</p>";
+
+        await _emailSender.SendAsync(
+            teamMember.Email, teamMember.FullName,
+            $"You're invited to join {tenantName} on POSShopTicketing", bodyHtml, cancellationToken);
     }
 
     //private async Task<string> GenerateUniqueSlugAsync(string tenantName, CancellationToken cancellationToken)

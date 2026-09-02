@@ -7,44 +7,89 @@ public class RegisterTenantCommandValidator : AbstractValidator<RegisterTenantCo
 {
     public RegisterTenantCommandValidator()
     {
-        RuleFor(v => v.TenantName).NotEmpty().MaximumLength(200);
+        RuleFor(v => v.TenantName)
+            .NotEmpty()
+            .MaximumLength(200);
 
-        RuleFor(v => v.OwnerEmail).NotEmpty().EmailAddress().MaximumLength(200).Must(BeValidEmail).WithMessage("Please provide a valid email address.");
+        RuleFor(v => v.OwnerEmail)
+            .NotEmpty()
+            .EmailAddress()
+            .MaximumLength(200)
+            .Must(BeValidEmail)
+            .WithMessage("Please provide a valid email address.");
 
         RuleFor(v => v.OwnerPassword)
             .NotEmpty()
-            .MinimumLength(8).WithMessage("Password must be at least 8 characters.")
+            .MinimumLength(8)
+            .WithMessage("Password must be at least 8 characters.")
             .MaximumLength(100);
 
-        RuleFor(v => v.OwnerFirstName).NotEmpty().MaximumLength(100);
-        RuleFor(v => v.OwnerLastName).NotEmpty().MaximumLength(100);
+        RuleFor(v => v.OwnerFirstName)
+            .NotEmpty()
+            .MaximumLength(100);
 
+        RuleFor(v => v.OwnerLastName)
+            .NotEmpty()
+            .MaximumLength(100);
+
+        RuleForEach(v => v.Invites)
+            .ChildRules(invite =>
+            {
+                invite.When(x => !string.IsNullOrWhiteSpace(x.Email), () =>
+                {
+                    invite.RuleFor(x => x.Email)
+                        .NotEmpty()
+                        .EmailAddress()
+                        .Must(BeValidEmail)
+                        .WithMessage("Please provide a valid email address.");
+
+                    invite.RuleFor(x => x.Role)
+                        .NotNull()
+                        .WithMessage("Role is required.");
+                });
+            });
+
+        RuleFor(v => v)
+            .Must(HaveInviteEmailsDifferentFromOwner)
+            .WithMessage("Invite email address cannot be the same as the owner email.");
+
+        RuleFor(v => v)
+            .Must(HaveUniqueInviteEmails)
+            .WithMessage("Duplicate invite email addresses are not allowed.");
     }
 
     private static bool BeValidEmail(string email)
-
     {
-
         try
-
         {
-
             var address = new MailAddress(email);
 
-            return address.Address == email;
-
+            return address.Address.Equals(
+                email,
+                StringComparison.OrdinalIgnoreCase);
         }
-
         catch
-
         {
-
             return false;
-
         }
-
     }
 
+    private static bool HaveInviteEmailsDifferentFromOwner(RegisterTenantCommand command)
+    {
+        var ownerEmail = command.OwnerEmail.Trim().ToLowerInvariant();
+
+        return command.Invites
+            .Where(i => !string.IsNullOrWhiteSpace(i.Email))
+            .All(i => i.Email!.Trim().ToLowerInvariant() != ownerEmail);
+    }
+
+    private static bool HaveUniqueInviteEmails(RegisterTenantCommand command)
+    {
+        var inviteEmails = command.Invites
+            .Where(i => !string.IsNullOrWhiteSpace(i.Email))
+            .Select(i => i.Email!.Trim().ToLowerInvariant())
+            .ToList();
+
+        return inviteEmails.Count == inviteEmails.Distinct().Count();
+    }
 }
-
-
