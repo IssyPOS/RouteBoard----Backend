@@ -42,11 +42,11 @@ public class RegisterTenantCommandValidator : AbstractValidator<RegisterTenantCo
                         .NotEmpty()
                         .EmailAddress()
                         .Must(BeValidEmail)
-                        .WithMessage("Please provide a valid email address.");
+                        .WithMessage("Please provide a valid Invite email address.");
 
                     invite.RuleFor(x => x.Role)
                         .NotNull()
-                        .WithMessage("Role is required.").NotEqual(TeamMemberRole.PlatformSuperAdmin);
+                        .WithMessage("Invite Role is required.").NotEqual(TeamMemberRole.PlatformSuperAdmin);
                 });
             });
 
