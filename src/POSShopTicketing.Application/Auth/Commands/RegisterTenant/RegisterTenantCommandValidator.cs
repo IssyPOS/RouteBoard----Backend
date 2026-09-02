@@ -1,4 +1,5 @@
 using FluentValidation;
+using POSShopTicketing.Domain.Enums;
 using System.Net.Mail;
 
 namespace POSShopTicketing.Application.Auth.Commands.RegisterTenant;
@@ -45,7 +46,7 @@ public class RegisterTenantCommandValidator : AbstractValidator<RegisterTenantCo
 
                     invite.RuleFor(x => x.Role)
                         .NotNull()
-                        .WithMessage("Role is required.");
+                        .WithMessage("Role is required.").NotEqual(TeamMemberRole.PlatformSuperAdmin);
                 });
             });
 
