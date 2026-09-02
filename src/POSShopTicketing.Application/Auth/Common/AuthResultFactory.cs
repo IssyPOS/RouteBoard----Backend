@@ -70,7 +70,6 @@ public class AuthResultFactory
         TeamMemberId = teamMember.Id,
         TenantId = teamMember.TenantId == Guid.Empty ? null : teamMember.TenantId,
         Email = teamMember.Email,
-        FullName = teamMember.FullName,
         FirstName = teamMember.FirstName,
         LastName = teamMember.LastName,
         Role = teamMember.Role,

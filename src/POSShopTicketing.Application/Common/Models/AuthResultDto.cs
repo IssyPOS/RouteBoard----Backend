@@ -9,7 +9,6 @@ public record AuthResultDto
     public Guid TeamMemberId { get; init; }
     public Guid? TenantId { get; init; }
     public string Email { get; init; } = string.Empty;
-    public string FullName { get; init; } = string.Empty;
 
     public string FirstName { get; init; } = string.Empty;
 
