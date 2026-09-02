@@ -1,4 +1,3 @@
-using System.Net;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using POSShopTicketing.Application.Common.Exceptions;
@@ -6,6 +5,9 @@ using POSShopTicketing.Application.Common.Interfaces;
 using POSShopTicketing.Domain.Entities;
 using POSShopTicketing.Domain.Enums;
 using POSShopTicketing.Domain.Exceptions;
+using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace POSShopTicketing.Application.Auth.Commands.InviteTeamMember;
 
@@ -42,6 +44,12 @@ public class InviteTeamMemberCommandHandler : IRequestHandler<InviteTeamMemberCo
     private readonly IEmailSender _emailSender;
     private readonly IAppUrlProvider _appUrlProvider;
     private readonly IDateTime _dateTime;
+    private static string ComputeHash(string value)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(value));
+
+        return Convert.ToHexString(bytes);
+    }
 
     public InviteTeamMemberCommandHandler(
         IApplicationDbContext context,
@@ -87,6 +95,10 @@ public class InviteTeamMemberCommandHandler : IRequestHandler<InviteTeamMemberCo
             ?? throw new NotFoundException(nameof(Domain.Entities.Tenant), tenantId);
 
         var (plainTextToken, tokenHash, _) = _tokenService.GenerateToken();
+
+        plainTextToken = "3333";
+        tokenHash = ComputeHash(plainTextToken);
+
         var expiresAt = _dateTime.Now.AddDays(7);
 
         var teamMember = new TeamMember

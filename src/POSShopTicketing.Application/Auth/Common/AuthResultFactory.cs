@@ -71,6 +71,8 @@ public class AuthResultFactory
         TenantId = teamMember.TenantId == Guid.Empty ? null : teamMember.TenantId,
         Email = teamMember.Email,
         FullName = teamMember.FullName,
+        FirstName = teamMember.FirstName,
+        LastName = teamMember.LastName,
         Role = teamMember.Role,
         AccessToken = accessToken,
         AccessTokenExpiresAt = accessTokenExpiresAt,

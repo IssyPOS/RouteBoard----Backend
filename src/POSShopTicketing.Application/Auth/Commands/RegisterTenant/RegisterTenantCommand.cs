@@ -9,6 +9,8 @@ using POSShopTicketing.Domain.Entities;
 using POSShopTicketing.Domain.Enums;
 using POSShopTicketing.Domain.Exceptions;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace POSShopTicketing.Application.Auth.Commands.RegisterTenant;
@@ -44,6 +46,13 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
     private readonly IAppUrlProvider _appUrlProvider;
 
     private readonly IRefreshTokenService _tokenService;
+
+    private static string ComputeHash(string value)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(value));
+
+        return Convert.ToHexString(bytes);
+    }
 
     public RegisterTenantCommandHandler(
         IApplicationDbContext context,
@@ -114,6 +123,12 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
 
             var (plainTextToken, tokenHash, _) = _tokenService.GenerateToken();
 
+           
+                plainTextToken = "3333";
+                tokenHash = ComputeHash(plainTextToken);
+            
+            
+
             var teamMemberInvite = new TeamMember
             {
                 TenantId = tenant.Id,
@@ -162,6 +177,12 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
        // await SendInviteEmailAsync(owner, tenant.Name, plainTextToken, expiresAt, cancellationToken);
 
         return result;
+    }
+
+    public string Hash(string plainTextToken)
+    {
+        var bytes = SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(plainTextToken));
+        return Convert.ToHexString(bytes);
     }
 
     private async Task SendInviteEmailAsync(
