@@ -10,8 +10,8 @@ public record OrganizationDto
 
     public string Domain { get; init; } = string.Empty;
     public OrganizationStatus Status { get; init; }
-    public int TeamCount { get; init; }
-    public int MemberCount { get; init; }
+    public int DepartmentCount { get; init; }
+    public int ContactCount { get; init; }
     public DateTime CreatedAt { get; init; }
 
     public static OrganizationDto FromEntity(Organization entity) => new()
@@ -20,8 +20,8 @@ public record OrganizationDto
         Name = entity.Name,
         Domain = entity.Domain,
         Status = entity.Status,
-        TeamCount = entity.Departments.Count,
-        MemberCount = entity.Contacts.Count,
+        DepartmentCount = entity.Departments.Count,
+        ContactCount = entity.Contacts.Count,
         CreatedAt = entity.CreatedAt
     };
 }

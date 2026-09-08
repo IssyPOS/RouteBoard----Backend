@@ -166,6 +166,7 @@ try
         {
             policy.WithOrigins(
                     "https://routeboars.com",
+                    "http://localhost:4200",
                     "https://www.routeboars.com")
                   .AllowAnyMethod()
                   .AllowAnyHeader();

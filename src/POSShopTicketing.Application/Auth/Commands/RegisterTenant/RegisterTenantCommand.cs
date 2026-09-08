@@ -8,6 +8,7 @@ using POSShopTicketing.Application.Common.Models;
 using POSShopTicketing.Domain.Entities;
 using POSShopTicketing.Domain.Enums;
 using POSShopTicketing.Domain.Exceptions;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -93,6 +94,8 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
 
         //var slug = await GenerateUniqueSlugAsync(request.TenantName, cancellationToken);
 
+
+
         var tenant = new Tenant
         {
             Name = request.TenantName.Trim(),
@@ -101,6 +104,15 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
             Plan = TenantPlan.Trial,
             Status = TenantStatus.Active
         };
+
+        var slugExists = await _context.Tenants
+    .AnyAsync(x => x.Slug == tenant.Slug, cancellationToken);
+
+        if (slugExists)
+        {
+            throw new DomainException(
+                $"A tenant with slug '{tenant.Slug}' already exists.");
+        }
 
         _context.Tenants.Add(tenant);
         await _context.SaveChangesAsync(cancellationToken);
@@ -121,18 +133,29 @@ public class RegisterTenantCommandHandler : IRequestHandler<RegisterTenantComman
                 continue;
             }
 
-            var inviteEmail = invite.Email.Trim().ToLowerInvariant();
+            var inviteEmails = request.Invites
+    .Where(x => !string.IsNullOrWhiteSpace(x.Email))
+    .Select(x => x.Email!.Trim().ToLowerInvariant())
+    .ToList();
 
-            var emailExists = await _context.TeamMembers
-            .AsNoTracking()
-            .AnyAsync(
-            x => x.Email == inviteEmail,
-            cancellationToken);
+            var existingEmails = await _context.TeamMembers
+                .AsNoTracking()
+                .Where(x => inviteEmails.Contains(x.Email))
+                .Select(x => x.Email)
+                .ToListAsync(cancellationToken);
 
-            if (emailExists)
+            if (existingEmails.Any())
             {
                 throw new DomainException(
-                $"An account with invite email '{inviteEmail}' already exists.");
+                    $"The following email addresses already exist: {string.Join(", ", existingEmails)}");
+            }
+
+            var inviteEmail = invite.Email.Trim().ToLowerInvariant();
+
+            if (inviteEmail == normalizedEmail)
+            {
+                throw new DomainException(
+                "Invite email address cannot be the same as the owner email.");
             }
 
             var (plainTextToken, tokenHash, _) = _tokenService.GenerateToken();

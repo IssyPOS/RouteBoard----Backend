@@ -33,7 +33,7 @@ public record InviteTeamMemberCommand : IRequest<InviteTeamMemberResult>
 /// <summary>Deliberately does NOT include the invite token - see the
 /// handler summary above. ExpiresAt lets the caller show "invitation
 /// sent, expires on {date}" without ever holding the secret itself.</summary>
-public record InviteTeamMemberResult(Guid TeamMemberId, string plainTextToken, DateTime ExpiresAt);
+public record InviteTeamMemberResult(Guid TeamMemberId, DateTime ExpiresAt);
 
 public class InviteTeamMemberCommandHandler : IRequestHandler<InviteTeamMemberCommand, InviteTeamMemberResult>
 {
@@ -119,7 +119,7 @@ public class InviteTeamMemberCommandHandler : IRequestHandler<InviteTeamMemberCo
 
         await SendInviteEmailAsync(teamMember, tenant.Name, plainTextToken, expiresAt, cancellationToken);
 
-        return new InviteTeamMemberResult(teamMember.Id, plainTextToken,  expiresAt);
+        return new InviteTeamMemberResult(teamMember.Id,  expiresAt);
     }
 
     private async Task SendInviteEmailAsync(
