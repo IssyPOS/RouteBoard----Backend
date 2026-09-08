@@ -33,6 +33,30 @@ public class OrganizationsController : ApiControllerBase
         return Ok(ApiResponse<OrganizationDto>.Success(result));
     }
 
+    [HttpGet("contacts")]
+    public async Task<ActionResult<PaginatedResponse<OrganizationContactDto>>> GetOrganizationContacts(
+    [FromQuery] string? searchTerm,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 20)
+    {
+        pageSize = Math.Clamp(pageSize, 1, 20);
+
+        var result = await Mediator.Send(new GetOrganizationContactsQuery
+        {
+            SearchTerm = searchTerm,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        });
+
+        return Ok(
+            PaginatedResponse<OrganizationContactDto>.Create(
+                result.Items,
+                result.PageNumber,
+                pageSize,
+                result.TotalCount));
+    }
+
+
     [Authorize(Roles = "Owner,Admin")]
     [HttpPost]
     public async Task<ActionResult<ApiResponse<Guid>>> CreateOrganization(CreateOrganizationCommand command)
