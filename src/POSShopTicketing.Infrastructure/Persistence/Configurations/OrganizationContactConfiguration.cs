@@ -12,6 +12,8 @@ public class OrganizationContactConfiguration : IEntityTypeConfiguration<Organiz
         builder.HasKey(m => m.Id);
 
         builder.Property(m => m.FullName).IsRequired().HasMaxLength(200);
+        builder.Property(m => m.FirstName).IsRequired().HasMaxLength(200);
+        builder.Property(m => m.LastName).IsRequired().HasMaxLength(200);
         builder.Property(m => m.Email).IsRequired().HasMaxLength(200);
         builder.Property(m => m.Phone).HasMaxLength(30);
         builder.Property(m => m.Status).IsRequired().HasConversion<string>().HasMaxLength(20);

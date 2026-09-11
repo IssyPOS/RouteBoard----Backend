@@ -57,7 +57,7 @@ public class LinkTriageTicketCommandHandler : IRequestHandler<LinkTriageTicketCo
         RegisterTriageTicketCommandHandler.ApplyTriageDecision(
             ticket, TicketStatus.New,
             contact.OrganizationId, contact.OrganizationDepartmentId, contact.Id, assignedToTeamMemberId,
-            $"Linked to existing Organization Contact \"{contact.FullName}\"",
+            $"Linked to existing Organization Contact \"{contact.LastName}\"",
             _currentUserService.TeamMemberId, now);
 
         await _context.SaveChangesAsync(cancellationToken);

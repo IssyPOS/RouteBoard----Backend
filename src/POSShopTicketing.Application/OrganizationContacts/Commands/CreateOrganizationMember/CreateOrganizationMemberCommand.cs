@@ -10,9 +10,11 @@ namespace POSShopTicketing.Application.OrganizationMembers.Commands.CreateOrgani
 public record CreateOrganizationContactCommand : IRequest<Guid>
 {
     public Guid OrganizationId { get; init; }
-    public Guid? OrganizationTeamId { get; init; }
-    public string FullName { get; init; } = string.Empty;
+    public Guid? OrganizationDepartmentId { get; init; }
+    public string FirstName { get; init; } = string.Empty;
+    public string LastName { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
+    public string JobTitle { get; init; } = string.Empty;
     public string? Phone { get; init; }
 }
 
@@ -35,12 +37,12 @@ public class CreateOrganizationContactCommandHandler : IRequestHandler<CreateOrg
         var organization = await _context.Organizations.FindAsync(new object[] { request.OrganizationId }, cancellationToken)
             ?? throw new NotFoundException(nameof(Organization), request.OrganizationId);
 
-        if (request.OrganizationTeamId.HasValue)
+        if (request.OrganizationDepartmentId.HasValue)
         {
-            var team = await _context.OrganizationDepartments.FindAsync(new object[] { request.OrganizationTeamId.Value }, cancellationToken);
+            var team = await _context.OrganizationDepartments.FindAsync(new object[] { request.OrganizationDepartmentId.Value }, cancellationToken);
             if (team is null || team.OrganizationId != organization.Id)
             {
-                throw new NotFoundException(nameof(OrganizationDepartment), request.OrganizationTeamId.Value);
+                throw new NotFoundException(nameof(OrganizationDepartment), request.OrganizationDepartmentId.Value);
             }
         }
 
@@ -59,8 +61,10 @@ public class CreateOrganizationContactCommandHandler : IRequestHandler<CreateOrg
         {
             TenantId = tenantId,
             OrganizationId = organization.Id,
-            OrganizationDepartmentId = request.OrganizationTeamId,
-            FullName = request.FullName.Trim(),
+            OrganizationDepartmentId = request.OrganizationDepartmentId,
+            FirstName = request.FirstName.Trim(),
+            LastName = request.LastName.Trim(),
+            JobTitle = request.JobTitle,
             Email = normalizedEmail,
             Phone = request.Phone
         };

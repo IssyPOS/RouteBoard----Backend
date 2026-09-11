@@ -17,7 +17,7 @@ public class OrganizationDepartmentConfiguration : IEntityTypeConfiguration<Orga
 
         builder.HasIndex(t => new { t.OrganizationId, t.Name }).IsUnique();
 
-        builder.HasMany(t => t.Members)
+        builder.HasMany(t => t.Contacts)
             .WithOne(m => m.OrganizationDepartment)
             .HasForeignKey(m => m.OrganizationDepartmentId)
             .OnDelete(DeleteBehavior.SetNull);

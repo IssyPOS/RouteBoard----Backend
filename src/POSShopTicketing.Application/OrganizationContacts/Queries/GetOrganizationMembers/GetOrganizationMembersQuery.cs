@@ -28,7 +28,7 @@ public class GetOrganizationContactsQueryHandler : IRequestHandler<GetOrganizati
             .Include(m => m.Organization)
             .Include(m => m.OrganizationDepartment)
             .AsNoTracking()
-            .OrderBy(m => m.FullName)
+            .OrderBy(m => m.LastName)
             .AsQueryable();
 
         if (request.OrganizationId.HasValue)
@@ -39,7 +39,7 @@ public class GetOrganizationContactsQueryHandler : IRequestHandler<GetOrganizati
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
             var term = request.SearchTerm.Trim();
-            query = query.Where(m => EF.Functions.Like(m.FullName, $"%{term}%") || EF.Functions.Like(m.Email, $"%{term}%"));
+            query = query.Where(m => EF.Functions.Like(m.LastName, $"%{term}%") || EF.Functions.Like(m.Email, $"%{term}%"));
         }
 
         var paged = await PaginatedList<Domain.Entities.OrganizationContact>.CreateAsync(query, request.PageNumber, request.PageSize);

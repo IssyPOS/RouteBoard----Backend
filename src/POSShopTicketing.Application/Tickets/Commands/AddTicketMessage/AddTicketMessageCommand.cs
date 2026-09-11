@@ -91,7 +91,7 @@ public class AddTicketMessageCommandHandler : IRequestHandler<AddTicketMessageCo
                 var subjectWithToken = SubjectTokenHelper.AppendToken($"Re: {ticket.Subject}", ticket.TicketNumber);
 
                 _backgroundJobScheduler.Enqueue<ISendReplyEmailJob>(job => job.SendAsync(
-                    message.Id, ticket.OrganizationContact.Email, ticket.OrganizationContact.FullName,
+                    message.Id, ticket.OrganizationContact.Email, ticket.OrganizationContact.FirstName,
                     subjectWithToken, message.Body, lastInboundMessageId, generatedMessageId!, CancellationToken.None));
             }
         }

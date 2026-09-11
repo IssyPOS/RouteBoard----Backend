@@ -211,18 +211,18 @@ public class ApplicationDbContextInitializer
         {
             TenantId = tenant.Id, OrganizationId = contoso.Id,
             OrganizationDepartmentId = contosoIt.Id,
-            FullName = "Priya Kapoor", Email = "priya.kapoor@contoso.example", Phone = "+1-555-0101"
+            LastName = "Priya Kapoor", Email = "priya.kapoor@contoso.example", Phone = "+1-555-0101"
         };
         var contosoSalesMember = new OrganizationContact
         {
             TenantId = tenant.Id, OrganizationId = contoso.Id,
             OrganizationDepartmentId = contosoSales.Id,
-            FullName = "Diego Alvarez", Email = "diego.alvarez@contoso.example"
+            LastName = "Diego Alvarez", Email = "diego.alvarez@contoso.example"
         };
         var fabrikamMember = new OrganizationContact
         {
             TenantId = tenant.Id, OrganizationId = fabrikam.Id,
-            FullName = "Grace Chen", Email = "grace.chen@fabrikam.example"
+            LastName = "Grace Chen", Email = "grace.chen@fabrikam.example"
         };
         _context.OrganizationContacts.AddRange(contosoItMember, contosoSalesMember, fabrikamMember);
         await _context.SaveChangesAsync();
@@ -241,18 +241,18 @@ public class ApplicationDbContextInitializer
         var now = DateTime.UtcNow;
 
         await AddTicketAsync(tenant, contoso.Id, contosoIt.Id, contosoItMember.Id, mailbox.Id,
-            "Card reader offline at till 2", contosoItMember.Email, contosoItMember.FullName,
+            "Card reader offline at till 2", contosoItMember.Email, contosoItMember.LastName,
             "Card reader shows a red light and won't take contactless payments.",
             TicketStatus.New, TicketPriority.High, agent1.Id, now, resolvedAt: null, closedAt: null, firstResponseAt: null);
 
         await AddTicketAsync(tenant, contoso.Id, contosoSales.Id, contosoSalesMember.Id, mailbox.Id,
-            "Question about bulk order pricing", contosoSalesMember.Email, contosoSalesMember.FullName,
+            "Question about bulk order pricing", contosoSalesMember.Email, contosoSalesMember.LastName,
             "Do you offer a discount for orders over 500 units?",
             TicketStatus.Pending, TicketPriority.Medium, agent2.Id, now, resolvedAt: null, closedAt: null,
             firstResponseAt: now.AddHours(-2));
 
         await AddTicketAsync(tenant, fabrikam.Id, null, fabrikamMember.Id, mailbox.Id,
-            "Password reset request", fabrikamMember.Email, fabrikamMember.FullName,
+            "Password reset request", fabrikamMember.Email, fabrikamMember.LastName,
             "I'm locked out of my account after too many failed login attempts.",
             TicketStatus.Resolved, TicketPriority.Low, agent2.Id, now.AddDays(-3),
             resolvedAt: now.AddDays(-2), closedAt: null, firstResponseAt: now.AddDays(-3).AddHours(1));

@@ -16,14 +16,19 @@ public class OrganizationContact : BaseAuditableEntity, ITenantScoped
     /// Organization with no department grouping yet.</summary>
     public Guid? OrganizationDepartmentId { get; set; }
     public OrganizationDepartment? OrganizationDepartment { get; set; }
-
     public string FullName { get; set; } = string.Empty;
 
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+
     public string Email { get; set; } = string.Empty;
+
+    public string JobTitle { get; set; } = string.Empty;
 
     public string? Phone { get; set; }
 
     public OrganizationContactStatus Status { get; set; } = OrganizationContactStatus.Active;
 
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
+
 }

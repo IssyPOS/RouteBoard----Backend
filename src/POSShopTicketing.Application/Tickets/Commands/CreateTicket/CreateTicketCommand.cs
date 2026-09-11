@@ -126,7 +126,7 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, G
             AuthorType = contact is not null ? MessageAuthorType.OrganizationMember : MessageAuthorType.TeamMember,
             AuthorTeamMemberId = contact is null ? _currentUserService.TeamMemberId : null,
             AuthorEmail = contact?.Email,
-            AuthorName = contact?.FullName,
+            AuthorName = contact?.LastName,
             Body = _htmlSanitizer.Sanitize(request.InitialMessageBody)
         });
 

@@ -1,19 +1,20 @@
 using MediatR;
 using POSShopTicketing.Application.Common.Exceptions;
 using POSShopTicketing.Application.Common.Interfaces;
+using POSShopTicketing.Application.Organizations.Queries.GetOrganizations;
 using POSShopTicketing.Domain.Entities;
 using POSShopTicketing.Domain.Enums;
 
 namespace POSShopTicketing.Application.Organizations.Commands.CreateOrganization;
 
-public record CreateOrganizationCommand : IRequest<Guid>
+public record CreateOrganizationCommand : IRequest<CreateOrganizationDto>
 {
     public string Name { get; init; } = string.Empty;
     public string Domain { get; init; } = string.Empty;
-    public OrganizationStatus Status { get; init; } = OrganizationStatus.Active;
+    public OrganizationStatus Status { get; init; } = OrganizationStatus.Inactive;
 }
 
-public class CreateOrganizationCommandHandler : IRequestHandler<CreateOrganizationCommand, Guid>
+public class CreateOrganizationCommandHandler : IRequestHandler<CreateOrganizationCommand, CreateOrganizationDto>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentTenantService _currentTenantService;
@@ -24,7 +25,7 @@ public class CreateOrganizationCommandHandler : IRequestHandler<CreateOrganizati
         _currentTenantService = currentTenantService;
     }
 
-    public async Task<Guid> Handle(CreateOrganizationCommand request, CancellationToken cancellationToken)
+    public async Task<CreateOrganizationDto> Handle(CreateOrganizationCommand request, CancellationToken cancellationToken)
     {
         var tenantId = _currentTenantService.TenantId
             ?? throw new ForbiddenException("Organizations must be created from within a tenant.");
@@ -40,6 +41,13 @@ public class CreateOrganizationCommandHandler : IRequestHandler<CreateOrganizati
         _context.Organizations.Add(entity);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return entity.Id;
+        return new CreateOrganizationDto
+        {
+            Id = entity.Id,
+            TenantId = entity.TenantId,
+            Name = entity.Name,
+            Domain = entity.Domain,
+            Status = entity.Status
+        };
     }
 }

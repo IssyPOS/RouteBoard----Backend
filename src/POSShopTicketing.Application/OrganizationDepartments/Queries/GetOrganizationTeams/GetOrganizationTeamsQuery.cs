@@ -18,7 +18,7 @@ public class GetOrganizationTeamsQueryHandler : IRequestHandler<GetOrganizationD
     public async Task<List<OrganizationDepartmentDto>> Handle(GetOrganizationDepartmentsQuery request, CancellationToken cancellationToken)
     {
         var teams = await _context.OrganizationDepartments
-            .Include(t => t.Members)
+            .Include(t => t.Contacts)
             .AsNoTracking()
             .Where(t => t.OrganizationId == request.OrganizationId)
             .OrderBy(t => t.Name)

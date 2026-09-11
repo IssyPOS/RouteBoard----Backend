@@ -25,19 +25,24 @@ public class SearchOrganizationMembersQueryHandler
         var query = _context.OrganizationContacts
             .Include(m => m.Organization)
             .AsNoTracking()
-            .OrderBy(m => m.FullName)
+            .OrderBy(m => m.LastName)
+            .ThenBy(m => m.FirstName)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(request.Term))
         {
             var term = request.Term.Trim();
-            query = query.Where(m => EF.Functions.Like(m.FullName, $"%{term}%") || EF.Functions.Like(m.Email, $"%{term}%"));
+            query = query.Where(m =>
+    EF.Functions.Like(m.FirstName, $"%{term}%") ||
+    EF.Functions.Like(m.LastName, $"%{term}%") ||
+    EF.Functions.Like(m.FirstName + " " + m.LastName, $"%{term}%") ||
+    EF.Functions.Like(m.Email, $"%{term}%"));
         }
 
         var results = await query.Take(request.MaxResults <= 0 ? 10 : request.MaxResults).ToListAsync(cancellationToken);
 
         return results
-            .Select(m => new OrganizationMemberLookupDto(m.Id, m.FullName, m.Email, m.OrganizationId, m.Organization?.Name))
+            .Select(m => new OrganizationMemberLookupDto(m.Id, m.LastName, m.Email, m.OrganizationId, m.Organization?.Name))
             .ToList();
     }
 }

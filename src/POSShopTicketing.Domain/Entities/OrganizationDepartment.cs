@@ -13,5 +13,5 @@ public class OrganizationDepartment : BaseAuditableEntity, ITenantScoped
 
     public string Name { get; set; } = string.Empty;
 
-    public ICollection<OrganizationContact> Members { get; set; } = new List<OrganizationContact>();
+    public ICollection<OrganizationContact> Contacts { get; set; } = new List<OrganizationContact>();
 }

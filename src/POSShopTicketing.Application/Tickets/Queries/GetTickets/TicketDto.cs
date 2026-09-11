@@ -48,7 +48,7 @@ public class TicketDto
         OrganizationTeamId = entity.OrganizationDepartmentId,
         OrganizationTeamName = entity.OrganizationDepartment?.Name,
         OrganizationMemberId = entity.OrganizationContactId,
-        OrganizationMemberName = entity.OrganizationContact?.FullName,
+        OrganizationMemberName = entity.OrganizationContact?.LastName,
         CreatorId = entity.CreatorId,
         CreatorName = entity.CreatorName,
         RawSenderEmail = entity.RawSenderEmail,

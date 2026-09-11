@@ -61,9 +61,9 @@ public class OrganizationsController : ApiControllerBase
     [HttpPost]
     public async Task<ActionResult<ApiResponse<Guid>>> CreateOrganization(CreateOrganizationCommand command)
     {
-        var id = await Mediator.Send(command);
-        var response = ApiResponse<Guid>.Success(id, "Organization created.");
-        return CreatedAtAction(nameof(GetOrganization), new { id }, response);
+        var organization = await Mediator.Send(command);
+        var response = ApiResponse<CreateOrganizationDto>.Success(organization, "Organization created.");
+        return CreatedAtAction(nameof(GetOrganization),new { id = organization.Id },response);
     }
 
     [Authorize(Roles = "Owner,Admin")]
@@ -116,8 +116,9 @@ public class OrganizationsController : ApiControllerBase
         var contactId = await Mediator.Send(new CreateOrganizationContactCommand
         {
             OrganizationId = id,
-            OrganizationTeamId = request.OrganizationTeamId,
-            FullName = request.FullName,
+            OrganizationDepartmentId = request.OrganizationDepartmentId,
+            FirstName = request.FirstName,
+            LastName = request.LastName,
             Email = request.Email,
             Phone = request.Phone
         });
@@ -135,4 +136,4 @@ public class OrganizationsController : ApiControllerBase
 }
 
 public record CreateDepartmentRequest(string Name);
-public record CreateContactRequest(Guid? OrganizationTeamId, string FullName, string Email, string? Phone);
+public record CreateContactRequest(Guid? OrganizationDepartmentId, string FirstName, string LastName, string Email, string? Phone);

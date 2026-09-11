@@ -86,7 +86,7 @@ public class RegisterTriageTicketCommandHandler : IRequestHandler<RegisterTriage
             TenantId = ticket.TenantId,
             Organization = organization,
             OrganizationDepartment = department,
-            FullName = request.MemberFullName.Trim(),
+            LastName = request.MemberFullName.Trim(),
             Email = ticket.RawSenderEmail
         };
 
@@ -99,7 +99,7 @@ public class RegisterTriageTicketCommandHandler : IRequestHandler<RegisterTriage
         ApplyTriageDecision(
             ticket, TicketStatus.New,
             organization.Id, department?.Id, contact.Id, assignedToTeamMemberId,
-            $"Registered as new Organization Contact \"{contact.FullName}\" on \"{organization.Name}\"",
+            $"Registered as new Organization Contact \"{contact.LastName}\" on \"{organization.Name}\"",
             _currentUserService.TeamMemberId, now);
 
         await _context.SaveChangesAsync(cancellationToken);

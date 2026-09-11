@@ -31,12 +31,12 @@ public class GetOrganizationContactsQueryHandler
             var term = request.SearchTerm.Trim();
 
             query = query.Where(c =>
-                EF.Functions.Like(c.FullName, $"%{term}%") ||
+                EF.Functions.Like(c.LastName, $"%{term}%") ||
                 EF.Functions.Like(c.Email, $"%{term}%") ||
                 EF.Functions.Like(c.Organization!.Name, $"%{term}%"));
         }
 
-        query = query.OrderBy(c => c.FullName);
+        query = query.OrderBy(c => c.LastName);
 
         var paged = await PaginatedList<Domain.Entities.OrganizationContact>
             .CreateAsync(

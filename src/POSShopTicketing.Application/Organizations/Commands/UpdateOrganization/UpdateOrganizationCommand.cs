@@ -10,6 +10,7 @@ public record UpdateOrganizationCommand : IRequest
 {
     public Guid Id { get; init; }
     public string Name { get; init; } = string.Empty;
+    public string Domain { get; init; } = string.Empty;
     public OrganizationStatus Status { get; init; }
 }
 
@@ -28,6 +29,7 @@ public class UpdateOrganizationCommandHandler : IRequestHandler<UpdateOrganizati
             ?? throw new NotFoundException(nameof(Organization), request.Id);
 
         entity.Name = request.Name.Trim();
+        entity.Domain = request.Domain.Trim();
         entity.Status = request.Status;
 
         await _context.SaveChangesAsync(cancellationToken);

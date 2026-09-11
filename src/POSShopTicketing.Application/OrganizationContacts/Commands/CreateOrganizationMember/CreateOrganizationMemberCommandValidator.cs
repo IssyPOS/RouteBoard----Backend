@@ -7,7 +7,8 @@ public class CreateOrganizationMemberCommandValidator : AbstractValidator<Create
     public CreateOrganizationMemberCommandValidator()
     {
         RuleFor(v => v.OrganizationId).NotEmpty();
-        RuleFor(v => v.FullName).NotEmpty().MaximumLength(200);
+        RuleFor(v => v.FirstName).NotEmpty().MaximumLength(200);
+        RuleFor(v => v.LastName).NotEmpty().MaximumLength(200);
         RuleFor(v => v.Email).NotEmpty().EmailAddress().MaximumLength(200);
         RuleFor(v => v.Phone).MaximumLength(30);
     }
