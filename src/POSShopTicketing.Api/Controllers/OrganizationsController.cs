@@ -4,6 +4,8 @@ using POSShopTicketing.Application.OrganizationMembers.Commands.CreateOrganizati
 using POSShopTicketing.Application.OrganizationMembers.Commands.MergeOrganizationMember;
 using POSShopTicketing.Application.OrganizationMembers.Queries.GetOrganizationMembers;
 using POSShopTicketing.Application.Organizations.Commands.CreateOrganization;
+using POSShopTicketing.Application.Organizations.Commands.ReactivateOrganization;
+using POSShopTicketing.Application.Organizations.Commands.SuspendOrganization;
 using POSShopTicketing.Application.Organizations.Commands.UpdateOrganization;
 using POSShopTicketing.Application.Organizations.Queries.GetOrganizationById;
 using POSShopTicketing.Application.Organizations.Queries.GetOrganizations;
@@ -132,6 +134,29 @@ public class OrganizationsController : ApiControllerBase
     {
         await Mediator.Send(new MergeOrganizationContactCommand(id, contactId, mergeIntoContactId));
         return Ok(ApiResponse<object>.Success(new { }, "Contacts merged."));
+    }
+
+    [Authorize(Roles = "Owner,Admin,Manager")]
+    [HttpPatch("{id:guid}/suspend")]
+    public async Task<ActionResult<ApiResponse<object>>> SuspendOrganization(Guid id)
+    {
+        await Mediator.Send(new SuspendOrganizationCommand(id));
+
+        return Ok(ApiResponse<object>.Success(
+            new { },
+            "Organization suspended."));
+    }
+
+
+    [Authorize(Roles = "Owner,Admin,Manager")]
+    [HttpPatch("{id:guid}/reactivate")]
+    public async Task<ActionResult<ApiResponse<object>>> ReactivateOrganization(Guid id)
+    {
+        await Mediator.Send(new ReactivateOrganizationCommand(id));
+
+        return Ok(ApiResponse<object>.Success(
+            new { },
+            "Organization reactivated."));
     }
 }
 
