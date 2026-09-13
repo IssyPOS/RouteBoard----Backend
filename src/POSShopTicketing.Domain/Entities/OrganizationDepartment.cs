@@ -1,4 +1,5 @@
 using POSShopTicketing.Domain.Common;
+using POSShopTicketing.Domain.Enums;
 
 namespace POSShopTicketing.Domain.Entities;
 
@@ -12,6 +13,8 @@ public class OrganizationDepartment : BaseAuditableEntity, ITenantScoped
     public Organization? Organization { get; set; }
 
     public string Name { get; set; } = string.Empty;
+
+    public OrganizationDepartmentStatus Status { get; set; } = OrganizationDepartmentStatus.Active;
 
     public ICollection<OrganizationContact> Contacts { get; set; } = new List<OrganizationContact>();
 }

@@ -9,11 +9,11 @@ namespace POSShopTicketing.Application.Organizations.Commands.ReactivateOrganiza
 
 public record ReactivateOrganizationCommand(Guid OrganizationId) : IRequest;
 
-public class ReactivateTenantCommandHandler : IRequestHandler<ReactivateOrganizationCommand>
+public class ReactivateOrganizationCommandHandler : IRequestHandler<ReactivateOrganizationCommand>
 {
     private readonly IApplicationDbContext _context;
 
-    public ReactivateTenantCommandHandler(IApplicationDbContext context)
+    public ReactivateOrganizationCommandHandler(IApplicationDbContext context)
     {
         _context = context;
     }
@@ -32,4 +32,3 @@ public class ReactivateTenantCommandHandler : IRequestHandler<ReactivateOrganiza
         await _context.SaveChangesAsync(cancellationToken);
     }
 }
-
