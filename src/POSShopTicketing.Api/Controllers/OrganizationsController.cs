@@ -164,10 +164,10 @@ public class OrganizationsController : ApiControllerBase
 
     [HttpPut("{OrganizationId}/departments/{departmentOrganizationId:guid}")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateDepartment(
-     Guid OrganizationId, Guid departmentId,
+     Guid OrganizationId, Guid departmentOrganizationId,
     UpdateOrganizationDepartmentCommand command)
     {
-        if (departmentId != command.DepartmentOrganizationId)
+        if (departmentOrganizationId != command.DepartmentOrganizationId)
         {
             return BadRequest();
         }
