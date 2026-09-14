@@ -6,8 +6,7 @@ public class UpdateOrganizationDepartmentCommandValidator : AbstractValidator<Up
 {
     public UpdateOrganizationDepartmentCommandValidator()
     {
-        RuleFor(v => v.Id).NotEmpty();
-        RuleFor(v => v.OrganizationId).NotEmpty();
+        RuleFor(v => v.DepartmentOrganizationId).NotEmpty();
         RuleFor(v => v.Name).NotEmpty().MaximumLength(100);
     }
 }

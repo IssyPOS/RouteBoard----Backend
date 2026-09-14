@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using POSShopTicketing.Application.Common.Exceptions;
 using POSShopTicketing.Application.Common.Interfaces;
 using POSShopTicketing.Application.OrganizationDepartments.Queries.GetOrganizationDepartments;
@@ -10,8 +11,8 @@ namespace POSShopTicketing.Application.Organizations.Commands.UpdateOrganization
 
 public record UpdateOrganizationDepartmentCommand : IRequest<UpdateOrganizationDepartmentDto>
 {
-    public Guid Id { get; init; }
-    public Guid OrganizationId { get; init; }
+    public Guid DepartmentOrganizationId { get; init; }
+    //public Guid OrganizationId { get; init; }
     public string Name { get; init; } = string.Empty;
 }
 
@@ -30,13 +31,12 @@ public class UpdateOrganizationDepartmentCommandHandler
         UpdateOrganizationDepartmentCommand request,
         CancellationToken cancellationToken)
     {
-        var entity = await _context.OrganizationDepartments.FindAsync(
-            new object[] { request.Id },
-            cancellationToken)
-            ?? throw new NotFoundException(nameof(Organization), request.Id);
+        var entity = await _context.OrganizationDepartments.FirstOrDefaultAsync(d => d.Id == request.DepartmentOrganizationId,
+        cancellationToken) ?? throw new NotFoundException(nameof(OrganizationDepartment), request.DepartmentOrganizationId);
+
 
         entity.Name = request.Name.Trim();
-        entity.OrganizationId = request.OrganizationId;
+        //entity.OrganizationId = request.OrganizationId;
 
         await _context.SaveChangesAsync(cancellationToken);
 

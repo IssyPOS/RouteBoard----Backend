@@ -162,12 +162,12 @@ public class OrganizationsController : ApiControllerBase
             "Organization reactivated."));
     }
 
-    [HttpPut("departments/{id:guid}")]
+    [HttpPut("{OrganizationId}/departments/{departmentOrganizationId:guid}")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateDepartment(
-    Guid id,
+     Guid OrganizationId, Guid departmentId,
     UpdateOrganizationDepartmentCommand command)
     {
-        if (id != command.Id)
+        if (departmentId != command.DepartmentOrganizationId)
         {
             return BadRequest();
         }
