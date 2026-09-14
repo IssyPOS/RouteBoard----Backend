@@ -9,6 +9,7 @@ using POSShopTicketing.Application.Organizations.Commands.ReactivateOrganization
 using POSShopTicketing.Application.Organizations.Commands.SuspendOrganization;
 using POSShopTicketing.Application.Organizations.Commands.SuspendOrganizationDepartment;
 using POSShopTicketing.Application.Organizations.Commands.UpdateOrganization;
+using POSShopTicketing.Application.Organizations.Commands.UpdateOrganizationContact;
 using POSShopTicketing.Application.Organizations.Commands.UpdateOrganizationDepartment;
 using POSShopTicketing.Application.Organizations.Queries.GetOrganizationById;
 using POSShopTicketing.Application.Organizations.Queries.GetOrganizations;
@@ -200,22 +201,22 @@ public class OrganizationsController : ApiControllerBase
             "Organization Department reactivated."));
     }
 
-    //[HttpPut("{id:guid}")]
-    //public async Task<ActionResult<ApiResponse<ContactDto>>> UpdateContact(
-    //Guid id,
-    //UpdateContactCommand command)
-    //{
-    //    if (id != command.Id)
-    //    {
-    //        return BadRequest();
-    //    }
+    [HttpPut("{OrganizationId}/contacts/{contactOrganizationId:guid}")]
+    public async Task<ActionResult<ApiResponse<object>>> UpdateContact(
+     Guid OrganizationId, Guid contactOrganizationId,
+    UpdateOrganizationContactCommand command)
+    {
+        if (contactOrganizationId != command.ContactOrganizationId)
+        {
+            return BadRequest();
+        }
 
-    //    var contact = await Mediator.Send(command);
+        var contact = await Mediator.Send(command);
 
-    //    return Ok(ApiResponse<ContactDto>.Success(
-    //        contact,
-    //        "Contact updated."));
-    //}
+        return Ok(ApiResponse<object>.Success(
+            contact,
+            "Contact Updated."));
+    }
 
     //[HttpPatch("{id:guid}/suspend")]
     //public async Task<ActionResult<ApiResponse<object>>> SuspendContact(Guid id)

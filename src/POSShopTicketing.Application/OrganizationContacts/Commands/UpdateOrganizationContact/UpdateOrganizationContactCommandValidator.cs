@@ -8,3 +8,5 @@ namespace POSShopTicketing.Application.OrganizationContacts.Commands.UpdateOrgan
     {
     }
 }
+
+

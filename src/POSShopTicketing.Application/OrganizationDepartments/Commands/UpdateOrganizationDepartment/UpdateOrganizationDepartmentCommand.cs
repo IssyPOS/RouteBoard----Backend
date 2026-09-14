@@ -36,7 +36,7 @@ public class UpdateOrganizationDepartmentCommandHandler
 
 
         entity.Name = request.Name.Trim();
-        //entity.OrganizationId = request.OrganizationId;
+        
 
         await _context.SaveChangesAsync(cancellationToken);
 
