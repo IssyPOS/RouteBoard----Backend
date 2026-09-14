@@ -17,4 +17,8 @@
     <ProjectReference Include="..\POSShopTicketing.Domain\POSShopTicketing.Domain.csproj" />
     <ProjectReference Include="..\POSShopTicketing.Shared\POSShopTicketing.Shared.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="OrganizationContacts\Commands\ReactivateOrganizationContact\" />
+    <Folder Include="OrganizationContacts\Commands\SuspendOrganizationContact\" />
+  </ItemGroup>
 </Project>

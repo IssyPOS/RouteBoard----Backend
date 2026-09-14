@@ -162,7 +162,7 @@ public class OrganizationsController : ApiControllerBase
             "Organization reactivated."));
     }
 
-    [HttpPut("departemnts/{id:guid}")]
+    [HttpPut("departments/{id:guid}")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateDepartment(
     Guid id,
     UpdateOrganizationDepartmentCommand command)
@@ -199,6 +199,33 @@ public class OrganizationsController : ApiControllerBase
             new { },
             "Organization Department reactivated."));
     }
+
+    //[HttpPut("{id:guid}")]
+    //public async Task<ActionResult<ApiResponse<ContactDto>>> UpdateContact(
+    //Guid id,
+    //UpdateContactCommand command)
+    //{
+    //    if (id != command.Id)
+    //    {
+    //        return BadRequest();
+    //    }
+
+    //    var contact = await Mediator.Send(command);
+
+    //    return Ok(ApiResponse<ContactDto>.Success(
+    //        contact,
+    //        "Contact updated."));
+    //}
+
+    //[HttpPatch("{id:guid}/suspend")]
+    //public async Task<ActionResult<ApiResponse<object>>> SuspendContact(Guid id)
+    //{
+    //    await Mediator.Send(new SuspendContactCommand(id));
+
+    //    return Ok(ApiResponse<object>.Success(
+    //        new { },
+    //        "Contact suspended."));
+    //}
 
 
 }

@@ -8,10 +8,10 @@ public record OrganizationMemberLookupDto(Guid Id, string FullName, string Email
 
 /// <summary>Cheap typeahead for triage's "Link to existing member"
 /// action and for manual ticket creation.</summary>
-public record SearchOrganizationMembersQuery(string? Term, int MaxResults = 10) : IRequest<List<OrganizationMemberLookupDto>>;
+public record SearchOrganizationContactsQuery(string? Term, int MaxResults = 10) : IRequest<List<OrganizationMemberLookupDto>>;
 
 public class SearchOrganizationMembersQueryHandler
-    : IRequestHandler<SearchOrganizationMembersQuery, List<OrganizationMemberLookupDto>>
+    : IRequestHandler<SearchOrganizationContactsQuery, List<OrganizationMemberLookupDto>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -20,7 +20,7 @@ public class SearchOrganizationMembersQueryHandler
         _context = context;
     }
 
-    public async Task<List<OrganizationMemberLookupDto>> Handle(SearchOrganizationMembersQuery request, CancellationToken cancellationToken)
+    public async Task<List<OrganizationMemberLookupDto>> Handle(SearchOrganizationContactsQuery request, CancellationToken cancellationToken)
     {
         var query = _context.OrganizationContacts
             .Include(m => m.Organization)
