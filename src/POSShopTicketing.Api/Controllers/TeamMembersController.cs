@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using POSShopTicketing.Application.TeamMembers.Commands.DisableTeamMember;
+using POSShopTicketing.Application.TeamMembers.Commands.EnableTeamMember;
 using POSShopTicketing.Application.TeamMembers.Commands.UpdateTeamMemberRole;
 using POSShopTicketing.Application.TeamMembers.Queries.GetTeamMembers;
 using POSShopTicketing.Domain.Enums;
@@ -34,5 +35,13 @@ public class TeamMembersController : ApiControllerBase
     {
         await Mediator.Send(new DisableTeamMemberCommand(id));
         return Ok(ApiResponse<object>.Success(new { }, "Team member disabled."));
+    }
+
+    [Authorize(Roles = "Owner,Admin")]
+    [HttpPatch("{id:guid}/enable")]
+    public async Task<ActionResult<ApiResponse<object>>> Enable(Guid id)
+    {
+        await Mediator.Send(new EnableTeamMemberCommand(id));
+        return Ok(ApiResponse<object>.Success(new { }, "Team member enabled."));
     }
 }
