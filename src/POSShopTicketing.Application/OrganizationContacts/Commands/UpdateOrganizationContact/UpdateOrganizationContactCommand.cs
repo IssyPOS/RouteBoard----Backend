@@ -13,7 +13,7 @@ namespace POSShopTicketing.Application.Organizations.Commands.UpdateOrganization
 public record UpdateOrganizationContactCommand : IRequest<UpdateOrganizationContactDto>
 {
     public Guid ContactOrganizationId { get; init; }
-    //public Guid OrganizationId { get; init; }
+    public Guid OrganizationId { get; init; }
     public string FirstName { get; init; } = string.Empty;
     public string LastName { get; init; } = string.Empty;
     public string Email { get; init; } = string.Empty;
@@ -36,8 +36,8 @@ public class UpdateOrganizationContactCommandHandler
         UpdateOrganizationContactCommand request,
         CancellationToken cancellationToken)
     {
-        var entity = await _context.OrganizationContacts.FirstOrDefaultAsync(d => d.Id == request.ContactOrganizationId,
-        cancellationToken) ?? throw new NotFoundException(nameof(UpdateOrganizationContactDto), request.ContactOrganizationId);
+
+       var entity = await _context.OrganizationContacts.FirstOrDefaultAsync(d => d.Id == request.ContactOrganizationId && d.OrganizationId == request.OrganizationId, cancellationToken) ?? throw new NotFoundException(nameof(UpdateOrganizationContactDto), request.ContactOrganizationId);
 
 
         entity.FirstName = request.FirstName.Trim();
