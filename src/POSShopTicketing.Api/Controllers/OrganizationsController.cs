@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using POSShopTicketing.Application.OrganizationDepartments.Commands.UpdateOrganizationDepartment;
 using POSShopTicketing.Application.OrganizationMembers.Commands.CreateOrganizationMember;
 using POSShopTicketing.Application.OrganizationMembers.Commands.MergeOrganizationMember;
 using POSShopTicketing.Application.OrganizationMembers.Queries.GetOrganizationMembers;
@@ -165,22 +166,25 @@ public class OrganizationsController : ApiControllerBase
             "Organization reactivated."));
     }
 
-    [HttpPut("{OrganizationId}/departments/{departmentOrganizationId:guid}")]
-    public async Task<ActionResult<ApiResponse<object>>> UpdateDepartment(
-     Guid OrganizationId, Guid departmentOrganizationId,
-    UpdateOrganizationDepartmentCommand command)
+    [HttpPut("{organizationId:guid}/departments/{departmentId:guid}")]
+    public async Task<IActionResult> UpdateDepartment(
+        Guid organizationId,
+        Guid departmentId,
+        [FromBody] UpdateOrganizationDepartmentRequest request,
+        CancellationToken cancellationToken)
     {
-        if (departmentOrganizationId != command.DepartmentOrganizationId)
+        var command = new UpdateOrganizationDepartmentCommand
         {
-            return BadRequest();
-        }
+            OrganizationId = organizationId,
+            DepartmentId = departmentId,
+            Name = request.Name
+        };
 
-        var department = await Mediator.Send(command);
+        var result = await Mediator.Send(command, cancellationToken);
 
-        return Ok(ApiResponse<object>.Success(
-            department,
-            "Department updated."));
+        return Ok(result);
     }
+
 
     [HttpPatch("{departmentOrganizationId:guid}/suspend-department")]
     public async Task<ActionResult<ApiResponse<object>>> SuspendDepartment(Guid departmentOrganizationId)
@@ -203,15 +207,15 @@ public class OrganizationsController : ApiControllerBase
             "Organization Department reactivated."));
     }
 
-    [HttpPut("{OrganizationId}/contacts/{contactOrganizationId:guid}")]
+    [HttpPut("{OrganizationId}/contacts/{contactId:guid}")]
     public async Task<ActionResult<ApiResponse<object>>> UpdateContact(
      Guid OrganizationId, Guid contactOrganizationId,
     UpdateOrganizationContactCommand command)
     {
-        if (contactOrganizationId != command.ContactOrganizationId)
-        {
-            return BadRequest();
-        }
+        //if (contactOrganizationId != command.ContactOrganizationId)
+        //{
+        //    return BadRequest();
+        //}
 
         var contact = await Mediator.Send(command);
 

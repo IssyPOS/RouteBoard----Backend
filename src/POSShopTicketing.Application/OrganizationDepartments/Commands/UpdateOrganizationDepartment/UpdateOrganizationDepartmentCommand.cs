@@ -11,13 +11,14 @@ namespace POSShopTicketing.Application.Organizations.Commands.UpdateOrganization
 
 public record UpdateOrganizationDepartmentCommand : IRequest<UpdateOrganizationDepartmentDto>
 {
-    public Guid DepartmentOrganizationId { get; init; }
-    //public Guid OrganizationId { get; init; }
+    public Guid OrganizationId { get; init; }
+
+    public Guid DepartmentId { get; init; }
+
     public string Name { get; init; } = string.Empty;
 }
 
-public class UpdateOrganizationDepartmentCommandHandler
-    : IRequestHandler<UpdateOrganizationDepartmentCommand, UpdateOrganizationDepartmentDto>
+public class UpdateOrganizationDepartmentCommandHandler  : IRequestHandler<UpdateOrganizationDepartmentCommand, UpdateOrganizationDepartmentDto>
 {
     private readonly IApplicationDbContext _context;
 
@@ -27,16 +28,18 @@ public class UpdateOrganizationDepartmentCommandHandler
         _context = context;
     }
 
-    public async Task<UpdateOrganizationDepartmentDto> Handle(
-        UpdateOrganizationDepartmentCommand request,
-        CancellationToken cancellationToken)
+    public async Task<UpdateOrganizationDepartmentDto> Handle(UpdateOrganizationDepartmentCommand request, CancellationToken cancellationToken)
     {
-        var entity = await _context.OrganizationDepartments.FirstOrDefaultAsync(d => d.Id == request.DepartmentOrganizationId,
-        cancellationToken) ?? throw new NotFoundException(nameof(OrganizationDepartment), request.DepartmentOrganizationId);
-
+        var entity = await _context.OrganizationDepartments
+            .FirstOrDefaultAsync(
+                d => d.Id == request.DepartmentId &&
+                     d.OrganizationId == request.OrganizationId,
+                cancellationToken)
+            ?? throw new NotFoundException(
+                nameof(OrganizationDepartment),
+                request.DepartmentId);
 
         entity.Name = request.Name.Trim();
-        
 
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -47,5 +50,6 @@ public class UpdateOrganizationDepartmentCommandHandler
             OrganizationId = entity.OrganizationId
         };
     }
+
 }
 
