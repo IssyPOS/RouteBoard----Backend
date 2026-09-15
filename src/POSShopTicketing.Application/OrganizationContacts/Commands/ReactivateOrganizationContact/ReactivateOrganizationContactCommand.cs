@@ -1,54 +1,37 @@
-﻿//using MediatR;
-//using POSShopTicketing.Application.Common.Exceptions;
-//using POSShopTicketing.Application.Common.Interfaces;
-//using POSShopTicketing.Domain.Entities;
-//using POSShopTicketing.Domain.Enums;
-//using POSShopTicketing.Domain.Exceptions;
-//using System;
-//using System.Collections.Generic;
-//using System.Text;
+﻿using MediatR;
+using POSShopTicketing.Application.Common.Exceptions;
+using POSShopTicketing.Application.Common.Interfaces;
+using POSShopTicketing.Domain.Entities;
+using POSShopTicketing.Domain.Enums;
+using POSShopTicketing.Domain.Exceptions;
 
-//namespace POSShopTicketing.Application.OrganizationContacts.Commands.ReactivateOrganizationContact
-//{
-//    internal class ReactivateOrganizationContactCommand
-//    {
-//    }
-//}
+namespace POSShopTicketing.Application.Organizations.Commands.ReactivateOrganizationContact;
 
-//using MediatR;
-//using POSShopTicketing.Application.Common.Exceptions;
-//using POSShopTicketing.Application.Common.Interfaces;
-//using POSShopTicketing.Domain.Entities;
-//using POSShopTicketing.Domain.Enums;
-//using POSShopTicketing.Domain.Exceptions;
+public record ReactivateOrganizationContactCommand(Guid OrganizationContactId) : IRequest;
 
-//namespace POSShopTicketing.Application.Organizations.Commands.ReactivateOrganizationDepartment;
+public class ReactivateOrganizationContactCommandHandler : IRequestHandler<ReactivateOrganizationContactCommand>
+{
+    private readonly IApplicationDbContext _context;
 
-//public record ReactivateOrganizationDepartmentCommand(Guid OrganizationDepartmentId) : IRequest;
+    public ReactivateOrganizationContactCommandHandler(IApplicationDbContext context)
+    {
+        _context = context;
+    }
 
-//public class ReactivateOrganizationDepartmentCommandHandler : IRequestHandler<ReactivateOrganizationDepartmentCommand>
-//{
-//    private readonly IApplicationDbContext _context;
+    public async Task Handle(ReactivateOrganizationContactCommand request, CancellationToken cancellationToken)
+    {
+        if (request.OrganizationContactId == Guid.Empty)
+        {
+            throw new DomainException("The reserved Organization Contact does not need reactivating.");
+        }
 
-//    public ReactivateOrganizationDepartmentCommandHandler(IApplicationDbContext context)
-//    {
-//        _context = context;
-//    }
+        var organization = await _context.OrganizationContacts.FindAsync(new object[] { request.OrganizationContactId }, cancellationToken)
+            ?? throw new NotFoundException(nameof(OrganizationContact), request.OrganizationContactId);
 
-//    public async Task Handle(ReactivateOrganizationDepartmentCommand request, CancellationToken cancellationToken)
-//    {
-//        if (request.OrganizationDepartmentId == Guid.Empty)
-//        {
-//            throw new DomainException("The reserved Organization Department tenant does not need reactivating.");
-//        }
-
-//        var organization = await _context.OrganizationDepartments.FindAsync(new object[] { request.OrganizationDepartmentId }, cancellationToken)
-//            ?? throw new NotFoundException(nameof(Organization), request.OrganizationDepartmentId);
-
-//        organization.Status = OrganizationDepartmentStatus.Active;
-//        await _context.SaveChangesAsync(cancellationToken);
-//    }
-//}
+        organization.Status = OrganizationContactStatus.Active;
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+}
 
 
 

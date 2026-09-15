@@ -5,6 +5,7 @@ using POSShopTicketing.Application.OrganizationMembers.Commands.MergeOrganizatio
 using POSShopTicketing.Application.OrganizationMembers.Queries.GetOrganizationMembers;
 using POSShopTicketing.Application.Organizations.Commands.CreateOrganization;
 using POSShopTicketing.Application.Organizations.Commands.ReactivateOrganization;
+using POSShopTicketing.Application.Organizations.Commands.ReactivateOrganizationContact;
 using POSShopTicketing.Application.Organizations.Commands.ReactivateOrganizationDepartment;
 using POSShopTicketing.Application.Organizations.Commands.SuspendOrganization;
 using POSShopTicketing.Application.Organizations.Commands.SuspendOrganizationContact;
@@ -181,10 +182,10 @@ public class OrganizationsController : ApiControllerBase
             "Department updated."));
     }
 
-    [HttpPatch("{id:guid}/suspend-department")]
-    public async Task<ActionResult<ApiResponse<object>>> SuspendDepartment(Guid id)
+    [HttpPatch("{departmentOrganizationId:guid}/suspend-department")]
+    public async Task<ActionResult<ApiResponse<object>>> SuspendDepartment(Guid departmentOrganizationId)
     {
-        await Mediator.Send(new SuspendOrganizationDepartmentCommand(id));
+        await Mediator.Send(new SuspendOrganizationDepartmentCommand(departmentOrganizationId));
 
         return Ok(ApiResponse<object>.Success(
             new { },
@@ -192,10 +193,10 @@ public class OrganizationsController : ApiControllerBase
     }
 
     [Authorize(Roles = "Owner,Admin,Manager")]
-    [HttpPatch("{id:guid}/reactivate-department")]
-    public async Task<ActionResult<ApiResponse<object>>> ReactivateOrganizationDepartment(Guid id)
+    [HttpPatch("{departmentOrganizationId:guid}/reactivate-department")]
+    public async Task<ActionResult<ApiResponse<object>>> ReactivateOrganizationDepartment(Guid departmentOrganizationId)
     {
-        await Mediator.Send(new ReactivateOrganizationDepartmentCommand(id));
+        await Mediator.Send(new ReactivateOrganizationDepartmentCommand(departmentOrganizationId));
 
         return Ok(ApiResponse<object>.Success(
             new { },
@@ -219,7 +220,7 @@ public class OrganizationsController : ApiControllerBase
             "Contact Updated."));
     }
 
-    [HttpPatch("{id:guid}/suspend-contact")]
+    [HttpPatch("{OrganizationContactId:guid}/suspend-contact")]
     public async Task<ActionResult<ApiResponse<object>>> SuspendContact(Guid OrganizationContactId)
     {
         await Mediator.Send(new SuspendOrganizationContactComand(OrganizationContactId));
@@ -229,16 +230,16 @@ public class OrganizationsController : ApiControllerBase
             "Contact suspended."));
     }
 
-    //[Authorize(Roles = "Owner,Admin,Manager")]
-    //[HttpPatch("{id:guid}/reactivate-department")]
-    //public async Task<ActionResult<ApiResponse<object>>> ReactivateOrganizationDepartment(Guid id)
-    //{
-    //    await Mediator.Send(new ReactivateOrganizationDepartmentCommand(id));
+    [Authorize(Roles = "Owner,Admin,Manager")]
+    [HttpPatch("{OrganizationContactId:guid}/reactivate-contact")]
+    public async Task<ActionResult<ApiResponse<object>>> ReactivateOrganizationContact(Guid OrganizationContactId)
+    {
+        await Mediator.Send(new ReactivateOrganizationContactCommand(OrganizationContactId));
 
-    //    return Ok(ApiResponse<object>.Success(
-    //        new { },
-    //        "Organization Department reactivated."));
-    //}
+        return Ok(ApiResponse<object>.Success(
+            new { },
+            "Organization Contact reactivated."));
+    }
 
 
 }
