@@ -188,9 +188,9 @@ public class OrganizationsController : ApiControllerBase
 
 
     [HttpPatch("{departmentId:guid}/suspend-department")]
-    public async Task<ActionResult<ApiResponse<object>>> SuspendDepartment(Guid departmentOrganizationId)
+    public async Task<ActionResult<ApiResponse<object>>> SuspendDepartment(Guid departmentId)
     {
-        await Mediator.Send(new SuspendOrganizationDepartmentCommand(departmentOrganizationId));
+        await Mediator.Send(new SuspendOrganizationDepartmentCommand(departmentId));
 
         return Ok(ApiResponse<object>.Success(
             new { },
@@ -199,9 +199,9 @@ public class OrganizationsController : ApiControllerBase
 
     [Authorize(Roles = "Owner,Admin,Manager")]
     [HttpPatch("{departmentId:guid}/reactivate-department")]
-    public async Task<ActionResult<ApiResponse<object>>> ReactivateOrganizationDepartment(Guid departmentOrganizationId)
+    public async Task<ActionResult<ApiResponse<object>>> ReactivateOrganizationDepartment(Guid departmentId)
     {
-        await Mediator.Send(new ReactivateOrganizationDepartmentCommand(departmentOrganizationId));
+        await Mediator.Send(new ReactivateOrganizationDepartmentCommand(departmentId));
 
         return Ok(ApiResponse<object>.Success(
             new { },
@@ -230,9 +230,9 @@ public class OrganizationsController : ApiControllerBase
     }
 
     [HttpPatch("{contactId:guid}/suspend-contact")]
-    public async Task<ActionResult<ApiResponse<object>>> SuspendContact(Guid OrganizationContactId)
+    public async Task<ActionResult<ApiResponse<object>>> SuspendContact(Guid contactId)
     {
-        await Mediator.Send(new SuspendOrganizationContactComand(OrganizationContactId));
+        await Mediator.Send(new SuspendOrganizationContactComand(contactId));
 
         return Ok(ApiResponse<object>.Success(
             new { },
@@ -241,9 +241,9 @@ public class OrganizationsController : ApiControllerBase
 
     [Authorize(Roles = "Owner,Admin,Manager")]
     [HttpPatch("{contactId:guid}/reactivate-contact")]
-    public async Task<ActionResult<ApiResponse<object>>> ReactivateOrganizationContact(Guid OrganizationContactId)
+    public async Task<ActionResult<ApiResponse<object>>> ReactivateOrganizationContact(Guid contactId)
     {
-        await Mediator.Send(new ReactivateOrganizationContactCommand(OrganizationContactId));
+        await Mediator.Send(new ReactivateOrganizationContactCommand(contactId));
 
         return Ok(ApiResponse<object>.Success(
             new { },
