@@ -231,7 +231,7 @@ public class ApplicationDbContextInitializer
         _context.AssignmentRules.Add(new AssignmentRule
         {
             TenantId = tenant.Id,
-            ScopeType = AssignmentScopeType.OrganizationTeam,
+            ScopeType = AssignmentScopeType.OrganizationDepartment,
             ScopeId = contosoIt.Id,
             AssignedToTeamMemberId = agent1.Id,
             PriorityOrder = 0,
@@ -297,7 +297,7 @@ public class ApplicationDbContextInitializer
             TenantId = tenant.Id,
             TicketId = ticket.Id,
             Direction = MessageDirection.Inbound,
-            AuthorType = MessageAuthorType.OrganizationMember,
+            AuthorType = MessageAuthorType.OrganizationContact,
             AuthorEmail = senderEmail,
             AuthorName = senderName,
             Body = firstMessageBody,

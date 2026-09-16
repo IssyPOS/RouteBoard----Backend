@@ -15,10 +15,12 @@ public class TicketDto
 
     public Guid? OrganizationId { get; init; }
     public string? OrganizationName { get; init; }
-    public Guid? OrganizationTeamId { get; init; }
-    public string? OrganizationTeamName { get; init; }
-    public Guid? OrganizationMemberId { get; init; }
-    public string? OrganizationMemberName { get; init; }
+    public Guid? OrganizationDepartmentId { get; init; }
+    public string? OrganizationDepartmentName { get; init; }
+    public Guid? OrganizationContactId { get; init; }
+    public string? OrganizationContactFirstName { get; init; }
+
+    public string? OrganizationContactLastName { get; init; }
     public Guid CreatorId { get; init; }
     public string? CreatorName { get; init; }
     public string RawSenderEmail { get; init; } = string.Empty;
@@ -45,10 +47,11 @@ public class TicketDto
         Escalated = entity.Escalated,
         OrganizationId = entity.OrganizationId,
         OrganizationName = entity.Organization?.Name,
-        OrganizationTeamId = entity.OrganizationDepartmentId,
-        OrganizationTeamName = entity.OrganizationDepartment?.Name,
-        OrganizationMemberId = entity.OrganizationContactId,
-        OrganizationMemberName = entity.OrganizationContact?.LastName,
+        OrganizationDepartmentId = entity.OrganizationDepartmentId,
+        OrganizationDepartmentName = entity.OrganizationDepartment?.Name,
+        OrganizationContactId = entity.OrganizationContactId,
+        OrganizationContactLastName = entity.OrganizationContact?.LastName,
+        OrganizationContactFirstName = entity.OrganizationContact?.FirstName,
         CreatorId = entity.CreatorId,
         CreatorName = entity.CreatorName,
         RawSenderEmail = entity.RawSenderEmail,

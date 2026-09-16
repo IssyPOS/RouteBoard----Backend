@@ -6,7 +6,7 @@ namespace POSShopTicketing.Domain.Enums;
 /// default queue" from the spec's inbound pipeline diagram.</summary>
 public enum AssignmentScopeType
 {
-    OrganizationMember = 0,
-    OrganizationTeam = 1,
+    OrganizationContact = 0,
+    OrganizationDepartment = 1,
     Organization = 2
 }

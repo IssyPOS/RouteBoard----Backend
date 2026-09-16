@@ -26,25 +26,25 @@ public class TicketAssignmentService : ITicketAssignmentService
     public async Task<Guid?> ResolveAssigneeAsync(
         Guid tenantId,
         Guid? organizationId,
-        Guid? organizationTeamId,
-        Guid? organizationMemberId,
+        Guid? organizationDepartmentId,
+        Guid? organizationContactId,
         CancellationToken cancellationToken)
     {
-        if (organizationMemberId.HasValue)
+        if (organizationContactId.HasValue)
         {
-            var byMember = await FindRuleAsync(tenantId, AssignmentScopeType.OrganizationMember, organizationMemberId.Value, cancellationToken);
-            if (byMember.HasValue)
+            var byContact = await FindRuleAsync(tenantId, AssignmentScopeType.OrganizationContact, organizationContactId.Value, cancellationToken);
+            if (byContact.HasValue)
             {
-                return byMember;
+                return byContact;
             }
         }
 
-        if (organizationTeamId.HasValue)
+        if (organizationDepartmentId.HasValue)
         {
-            var byTeam = await FindRuleAsync(tenantId, AssignmentScopeType.OrganizationTeam, organizationTeamId.Value, cancellationToken);
-            if (byTeam.HasValue)
+            var byDepartment = await FindRuleAsync(tenantId, AssignmentScopeType.OrganizationDepartment, organizationDepartmentId.Value, cancellationToken);
+            if (byDepartment.HasValue)
             {
-                return byTeam;
+                return byDepartment;
             }
         }
 

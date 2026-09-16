@@ -188,7 +188,7 @@ public class IngestInboundEmailCommandHandler : IRequestHandler<IngestInboundEma
             TenantId = tenantId,
             TicketId = ticket.Id,
             Direction = MessageDirection.Inbound,
-            AuthorType = MessageAuthorType.OrganizationMember,
+            AuthorType = MessageAuthorType.OrganizationContact,
             AuthorEmail = normalizedSenderEmail,
             AuthorName = request.SenderName,
             Body = sanitizedBody,

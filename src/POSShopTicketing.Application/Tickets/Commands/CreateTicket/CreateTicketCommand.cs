@@ -115,7 +115,7 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, G
             ToStatus = TicketStatus.New,
             ChangedByTeamMemberId = _currentUserService.TeamMemberId,
             ChangedAt = now,
-            Note = "Created manually"
+            Note = "RouteBoard Ticket Created manually"
         });
 
         ticket.Messages.Add(new TicketMessage
@@ -123,10 +123,10 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, G
             TenantId = tenantId,
             TicketId = ticket.Id,
             Direction = MessageDirection.Inbound,
-            AuthorType = contact is not null ? MessageAuthorType.OrganizationMember : MessageAuthorType.TeamMember,
+            AuthorType = contact is not null ? MessageAuthorType.OrganizationContact : MessageAuthorType.TeamMember,
             AuthorTeamMemberId = contact is null ? _currentUserService.TeamMemberId : null,
             AuthorEmail = contact?.Email,
-            AuthorName = contact?.LastName,
+            AuthorName = contact?.FullName,
             Body = _htmlSanitizer.Sanitize(request.InitialMessageBody)
         });
 
