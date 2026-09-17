@@ -68,6 +68,8 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, G
         var tenant = await _context.Tenants.FindAsync(new object[] { tenantId }, cancellationToken)
             ?? throw new NotFoundException(nameof(Tenant), tenantId);
 
+        OrganizationDepartment? department = null;
+
         OrganizationContact? contact = null;
         if (request.OrganizationContactId.HasValue)
         {
@@ -82,11 +84,9 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, G
         var assignedToTeamMemberId = await _assignmentService.ResolveAssigneeAsync(
             tenantId, request.OrganizationId, request.OrganizationDepartmentId, request.OrganizationContactId, cancellationToken);
 
-        var normalizedEmail = contact?.Email.Trim().ToLowerInvariant();
-
         var teamMember = await _context.TeamMembers
             .IgnoreQueryFilters() // login runs before a tenant is known
-            .FirstOrDefaultAsync(u => u.Email == normalizedEmail, cancellationToken);
+            .FirstOrDefaultAsync(u => u.Email == _currentUserService.Email.ToString(), cancellationToken);
 
         var ticket = new Ticket
         {
@@ -94,14 +94,17 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, G
             TicketNumber = await _ticketNumberGenerator.NextAsync(tenant.TicketPrefix, cancellationToken),
             OrganizationId = request.OrganizationId,
             OrganizationDepartmentId = request.OrganizationDepartmentId,
+            DepartmentName = department?.Name ?? string.Empty,
             OrganizationContactId = request.OrganizationContactId,
+            ContactFirstName = contact?.FirstName ?? string.Empty,
+            ContactLastName = contact?.LastName ?? string.Empty,
             RawSenderEmail = contact?.Email ?? string.Empty,
             MailboxId = null,
             Subject = request.Subject.Trim(),
             Status = TicketStatus.New,
             Priority = priority,
             CreatorId = teamMember.Id,
-            CreatorName = teamMember.FullName,
+            CreatorName = teamMember.FirstName + " " + teamMember.LastName,
             Source = TicketSource.Manual,
             AssignedToTeamMemberId = assignedToTeamMemberId,
             DueAt = dueAt

@@ -19,9 +19,14 @@ public class Ticket : BaseAuditableEntity, ITenantScoped
     public Organization? Organization { get; set; }
 
     public Guid? OrganizationDepartmentId { get; set; }
+
+    public string? DepartmentName { get; set; }
     public OrganizationDepartment? OrganizationDepartment { get; set; }
 
     public Guid? OrganizationContactId { get; set; }
+
+    public string? ContactFirstName { get; set; }
+    public string? ContactLastName { get; set; }
     public OrganizationContact? OrganizationContact { get; set; }
 
     public Guid CreatorId { get; set; }
