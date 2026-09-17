@@ -44,9 +44,9 @@ public class GetTicketsQueryHandler : IRequestHandler<GetTicketsQuery, Paginated
             .OrderByDescending(t => t.CreatedAt)
             .AsQueryable();
 
-        query = request.Status.HasValue
-            ? query.Where(t => t.Status == request.Status.Value)
-            : query.Where(t => t.Status != TicketStatus.Unverified);
+        //query = request.Status.HasValue
+        //    ? query.Where(t => t.Status == request.Status.Value)
+        //    : query.Where(t => t.Status != TicketStatus.Unverified);
 
         if (request.Priority.HasValue)
         {

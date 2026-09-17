@@ -20,7 +20,11 @@ public record CreateTicketCommand : IRequest<Guid>
     public Guid? OrganizationId { get; init; }
     public Guid? OrganizationDepartmentId { get; init; }
     public Guid? OrganizationContactId { get; init; }
+    public bool Escalated { get; init; }
+    public TicketStatus Status { get; init; }
     public TicketPriority? Priority { get; init; }
+
+    public Guid? AssignedToTeamMemberId { get; init; }
 }
 
 public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, Guid>
@@ -101,12 +105,13 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, G
             RawSenderEmail = contact?.Email ?? string.Empty,
             MailboxId = null,
             Subject = request.Subject.Trim(),
-            Status = TicketStatus.New,
+            Status = request.Status,
+            Escalated = request.Escalated,
             Priority = priority,
             CreatorId = teamMember.Id,
             CreatorName = teamMember.FirstName + " " + teamMember.LastName,
             Source = TicketSource.Manual,
-            AssignedToTeamMemberId = assignedToTeamMemberId,
+            AssignedToTeamMemberId = request.AssignedToTeamMemberId,
             DueAt = dueAt
         };
 
