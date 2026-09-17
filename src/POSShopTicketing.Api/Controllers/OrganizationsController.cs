@@ -208,7 +208,7 @@ public class OrganizationsController : ApiControllerBase
             "Organization Department reactivated."));
     }
 
-    [HttpPut("{OrganizationId}/contacts/{contactId:guid}")]
+    [HttpPut("{organizationId}/contacts/{contactId:guid}")]
     public async Task<IActionResult> UpdateContact(Guid organizationId,Guid contactId,
         [FromBody] UpdateOrganizationContactRequest request,
         CancellationToken cancellationToken)
