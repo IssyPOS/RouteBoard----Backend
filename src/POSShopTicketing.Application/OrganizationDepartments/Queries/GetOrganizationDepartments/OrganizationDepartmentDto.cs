@@ -1,4 +1,5 @@
 using POSShopTicketing.Domain.Entities;
+using POSShopTicketing.Domain.Enums;
 
 namespace POSShopTicketing.Application.OrganizationTeams.Queries.GetOrganizationTeams;
 
@@ -8,6 +9,7 @@ public record OrganizationDepartmentDto
     public Guid OrganizationId { get; init; }
     public string Name { get; init; } = string.Empty;
     public int ContactCount { get; init; }
+    public OrganizationDepartmentStatus Status { get; init; }
     public DateTime CreatedAt { get; init; }
 
     public static OrganizationDepartmentDto FromEntity(OrganizationDepartment entity) => new()
@@ -16,6 +18,7 @@ public record OrganizationDepartmentDto
         OrganizationId = entity.OrganizationId,
         Name = entity.Name,
         ContactCount = entity.Contacts.Count,
+        Status = entity.Status,
         CreatedAt = entity.CreatedAt
     };
 }

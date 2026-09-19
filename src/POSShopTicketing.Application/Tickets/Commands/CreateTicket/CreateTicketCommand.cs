@@ -142,6 +142,15 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand, G
         
 
         _context.Tickets.Add(ticket);
+        _context.Notifications.Add(new Notification
+        {
+            TenantId = tenantId,
+            TeamMemberId = teamMember.Id,
+            TicketId = ticket.Id,
+            Title = "New Ticket Created",
+            Message = $"Ticket {ticket.TicketNumber} has been created.",
+            IsRead = false
+        });
         await _context.SaveChangesAsync(cancellationToken);
 
         await _publisher.Publish(

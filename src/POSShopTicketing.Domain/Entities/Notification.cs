@@ -15,6 +15,8 @@ public class Notification : BaseEntity, ITenantScoped
 
     public NotificationType Type { get; set; }
 
+    public string Message { get; set; } = string.Empty;
+
     public string Title { get; set; } = string.Empty;
     public string Body { get; set; } = string.Empty;
 
@@ -23,4 +25,6 @@ public class Notification : BaseEntity, ITenantScoped
     public bool IsRead { get; set; }
 
     public DateTime CreatedAt { get; set; }
+
+    public DateTime ReadAt { get; set; }
 }
