@@ -1,12 +1,16 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using POSShopTicketing.Application.Common.Exceptions;
 using POSShopTicketing.Application.Common.Interfaces;
+using POSShopTicketing.Domain.Entities;
 
 namespace POSShopTicketing.Application.OrganizationTeams.Queries.GetOrganizationTeams;
 
-public record GetOrganizationDepartmentsQuery(Guid OrganizationId) : IRequest<List<OrganizationDepartmentDto>>;
+public record GetOrganizationDepartmentsQuery(Guid OrganizationId)
+    : IRequest<List<OrganizationDepartmentDto>>;
 
-public class GetOrganizationTeamsQueryHandler : IRequestHandler<GetOrganizationDepartmentsQuery, List<OrganizationDepartmentDto>>
+public class GetOrganizationTeamsQueryHandler
+    : IRequestHandler<GetOrganizationDepartmentsQuery, List<OrganizationDepartmentDto>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -15,7 +19,9 @@ public class GetOrganizationTeamsQueryHandler : IRequestHandler<GetOrganizationD
         _context = context;
     }
 
-    public async Task<List<OrganizationDepartmentDto>> Handle(GetOrganizationDepartmentsQuery request, CancellationToken cancellationToken)
+    public async Task<List<OrganizationDepartmentDto>> Handle(
+        GetOrganizationDepartmentsQuery request,
+        CancellationToken cancellationToken)
     {
         var teams = await _context.OrganizationDepartments
             .Include(t => t.Contacts)
@@ -24,6 +30,15 @@ public class GetOrganizationTeamsQueryHandler : IRequestHandler<GetOrganizationD
             .OrderBy(t => t.Name)
             .ToListAsync(cancellationToken);
 
-        return teams.Select(OrganizationDepartmentDto.FromEntity).ToList();
+        if (!teams.Any())
+        {
+            throw new NotFoundException(
+                nameof(OrganizationDepartment),
+                request.OrganizationId);
+        }
+
+        return teams
+            .Select(OrganizationDepartmentDto.FromEntity)
+            .ToList();
     }
 }

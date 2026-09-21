@@ -1,7 +1,9 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using POSShopTicketing.Application.Common.Exceptions;
 using POSShopTicketing.Application.Common.Interfaces;
 using POSShopTicketing.Application.Common.Models;
+using POSShopTicketing.Domain.Entities;
 
 namespace POSShopTicketing.Application.OrganizationMembers.Queries.GetOrganizationMembers;
 
@@ -22,7 +24,9 @@ public class GetOrganizationContactsQueryHandler : IRequestHandler<GetOrganizati
         _context = context;
     }
 
-    public async Task<PaginatedList<OrganizationContactDto>> Handle(GetOrganizationContactsQuery request, CancellationToken cancellationToken)
+    public async Task<PaginatedList<OrganizationContactDto>> Handle(
+        GetOrganizationContactsQuery request,
+        CancellationToken cancellationToken)
     {
         var query = _context.OrganizationContacts
             .Include(m => m.Organization)
@@ -39,12 +43,33 @@ public class GetOrganizationContactsQueryHandler : IRequestHandler<GetOrganizati
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
             var term = request.SearchTerm.Trim();
-            query = query.Where(m => EF.Functions.Like(m.LastName, $"%{term}%") || EF.Functions.Like(m.Email, $"%{term}%"));
+
+            query = query.Where(m =>
+                EF.Functions.Like(m.LastName, $"%{term}%") ||
+                EF.Functions.Like(m.Email, $"%{term}%"));
         }
 
-        var paged = await PaginatedList<Domain.Entities.OrganizationContact>.CreateAsync(query, request.PageNumber, request.PageSize);
-        var dtos = paged.Items.Select(OrganizationContactDto.FromEntity).ToList();
+        // Throw NotFoundException when no records match
+        var exists = await query.AnyAsync(cancellationToken);
 
-        return new PaginatedList<OrganizationContactDto>(dtos, paged.TotalCount, paged.PageNumber, request.PageSize);
+        if (!exists)
+        {
+            throw new NotFoundException(
+                nameof(OrganizationContact),
+                request.SearchTerm ?? request.OrganizationId?.ToString() ?? "Search Criteria");
+        }
+
+        var paged = await PaginatedList<OrganizationContact>
+            .CreateAsync(query, request.PageNumber, request.PageSize);
+
+        var dtos = paged.Items
+            .Select(OrganizationContactDto.FromEntity)
+            .ToList();
+
+        return new PaginatedList<OrganizationContactDto>(
+            dtos,
+            paged.TotalCount,
+            paged.PageNumber,
+            request.PageSize);
     }
 }

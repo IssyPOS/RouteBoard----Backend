@@ -1,7 +1,9 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using POSShopTicketing.Application.Common.Exceptions;
 using POSShopTicketing.Application.Common.Interfaces;
 using POSShopTicketing.Application.Common.Models;
+using POSShopTicketing.Domain.Entities;
 
 namespace POSShopTicketing.Application.Organizations.Queries.GetOrganizations;
 
@@ -21,7 +23,9 @@ public class GetOrganizationsQueryHandler : IRequestHandler<GetOrganizationsQuer
         _context = context;
     }
 
-    public async Task<PaginatedList<OrganizationDto>> Handle(GetOrganizationsQuery request, CancellationToken cancellationToken)
+    public async Task<PaginatedList<OrganizationDto>> Handle(
+     GetOrganizationsQuery request,
+     CancellationToken cancellationToken)
     {
         var query = _context.Organizations
             .Include(o => o.Departments)
@@ -33,12 +37,31 @@ public class GetOrganizationsQueryHandler : IRequestHandler<GetOrganizationsQuer
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
             var term = request.SearchTerm.Trim();
-            query = query.Where(o => EF.Functions.Like(o.Name, $"%{term}%"));
+
+            query = query.Where(o =>
+                EF.Functions.Like(o.Name, $"%{term}%"));
         }
 
-        var paged = await PaginatedList<Domain.Entities.Organization>.CreateAsync(query, request.PageNumber, request.PageSize);
-        var dtos = paged.Items.Select(OrganizationDto.FromEntity).ToList();
+        var totalCount = await query.CountAsync(cancellationToken);
 
-        return new PaginatedList<OrganizationDto>(dtos, paged.TotalCount, paged.PageNumber, request.PageSize);
+        if (totalCount == 0)
+        {
+            throw new NotFoundException(
+                nameof(Organization),
+                request.SearchTerm ?? "Search Criteria");
+        }
+
+        var paged = await PaginatedList<Organization>
+            .CreateAsync(query, request.PageNumber, request.PageSize);
+
+        var dtos = paged.Items
+            .Select(OrganizationDto.FromEntity)
+            .ToList();
+
+        return new PaginatedList<OrganizationDto>(
+            dtos,
+            paged.TotalCount,
+            paged.PageNumber,
+            request.PageSize);
     }
 }
