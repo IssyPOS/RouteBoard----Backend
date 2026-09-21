@@ -78,17 +78,23 @@ public class OrganizationsController : ApiControllerBase
 
     [Authorize(Roles = "Owner,Admin")]
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult<ApiResponse<object>>> UpdateOrganization(Guid id, UpdateOrganizationCommand command)
+    public async Task<IActionResult> UpdateOrganization(
+     Guid id,
+     [FromBody] UpdateOrganizationRequest request,
+     CancellationToken cancellationToken)
     {
-        if (id != command.Id)
+        var command = new UpdateOrganizationCommand
         {
-            return BadRequest(ApiResponse<object>.Failure("Route id and body id must match."));
-        }
+            Id = id,
+            Name = request.Name,
+            Domain = request.Domain,
+            Status = request.Status
+        };
 
-        await Mediator.Send(command);
-        return Ok(ApiResponse<object>.Success(new { }, "Organization updated."));
+        var result = await Mediator.Send(command, cancellationToken);
+
+        return Ok(result);
     }
-
     // ---- Organization Teams -------------------------------------------
 
     [HttpGet("{id:guid}/departments")]
